@@ -1,9 +1,7 @@
 package ru.otus.spring.util.csv;
 
-import com.opencsv.exceptions.CsvException;
-
 import java.io.*;
-import java.util.List;
+import java.util.*;
 
 public class ResourceCSVReader implements CSVReader {
     private final String csvLocation;
@@ -12,17 +10,23 @@ public class ResourceCSVReader implements CSVReader {
         this.csvLocation = csvLocation;
     }
 
-    public List<String[]> readAll() throws IOException {
+    @Override
+    public List<List<String>> readAll() {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(csvLocation);
         if (inputStream == null) {
-            throw new FileNotFoundException(csvLocation);
+            throw new MissingResourceException("Can't find specified csv", "", csvLocation);
         }
         InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
         try (com.opencsv.CSVReader openCSVReader = new com.opencsv.CSVReader(inputStreamReader)) {
-            return openCSVReader.readAll();
+            List result = new ArrayList<List<String>>();
+            List<String[]> allRows = openCSVReader.readAll();
+            for (String[] row : allRows) {
+                result.add(Arrays.asList(row));
+            }
+            return result;
         }
-        catch (CsvException ex) {
-            throw new IOException(ex);
+        catch (Exception ex) {
+            throw new CSVReaderException("Problem with reading csv", ex);
         }
     }
 }

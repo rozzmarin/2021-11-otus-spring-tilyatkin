@@ -10,6 +10,7 @@ import ru.otus.spring.util.csv.CSVReader;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -21,11 +22,11 @@ public class QuestionDaoCSVTest {
         CSVReader csvReader = Mockito.mock(CSVReader.class);
         BDDMockito.given(csvReader.readAll())
                 .willReturn(Arrays.asList(
-                        new String[] { "Question 1", "", "Option 1.1", "Option 1.2", "Option 1.3", "Option 1.4" },
-                        new String[] { "Question 2", "" },
-                        new String[] { "Question 3", "", "Option 3.1", "Option 3.2", "Option 3.3", "Option 3.4" },
-                        new String[] { "Question 4", "", "Option 4.1", "Option 4.2", "Option 4.3", "Option 4.4" },
-                        new String[] { "Question 5", "", "Option 5.1", "Option 5.2", "Option 5.3", "Option 5.4" }
+                        Arrays.asList("Question 1", "", "Option 1.1", "Option 1.2", "Option 1.3", "Option 1.4"),
+                        Arrays.asList("Question 2", ""),
+                        Arrays.asList("Question 3", "", "Option 3.1", "Option 3.2", "Option 3.3", "Option 3.4"),
+                        Arrays.asList("Question 4", "", "Option 4.1", "Option 4.2", "Option 4.3", "Option 4.4"),
+                        Arrays.asList("Question 5", "", "Option 5.1", "Option 5.2", "Option 5.3", "Option 5.4")
                 ));
         questionDao = new QuestionDaoCSV(csvReader);
     }
@@ -42,13 +43,13 @@ public class QuestionDaoCSVTest {
                 .as("Question is not null").isNotNull()
                 .as("Question has correct body").matches(q -> Objects.equals(q.getBody(), "Question 4"))
                 .as("Question has answer options").matches(q -> q.hasAnswerOptions())
-                .as("Question has correct answer options length").matches(q -> q.getAnswerOptions().length == 4)
+                .as("Question has correct answer options length").matches(q -> q.getAnswerOptions().size() == 4)
                 .as("Question has correct answer options content").matches(q -> {
-                    String[] answerOptions = q.getAnswerOptions();
-                    return Objects.equals(answerOptions[0], "Option 4.1")
-                            && Objects.equals(answerOptions[1], "Option 4.2")
-                            && Objects.equals(answerOptions[2], "Option 4.3")
-                            && Objects.equals(answerOptions[3], "Option 4.4");
+                    List<String> answerOptions = q.getAnswerOptions();
+                    return Objects.equals(answerOptions.get(0), "Option 4.1")
+                            && Objects.equals(answerOptions.get(1), "Option 4.2")
+                            && Objects.equals(answerOptions.get(2), "Option 4.3")
+                            && Objects.equals(answerOptions.get(3), "Option 4.4");
                 });
     }
 
@@ -58,7 +59,7 @@ public class QuestionDaoCSVTest {
                 .as("Question is not null").isNotNull()
                 .as("Question has correct body").matches(q -> Objects.equals(q.getBody(), "Question 2"))
                 .as("Question has not answer options").matches(q -> !q.hasAnswerOptions())
-                .as("Question has zero answer options length").matches(q -> q.getAnswerOptions().length == 0);
+                .as("Question has zero answer options length").matches(q -> q.getAnswerOptions().size() == 0);
     }
 
     @Test

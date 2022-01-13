@@ -1,24 +1,31 @@
 package ru.otus.spring.domain;
 
-public class Question {
+import java.util.Collections;
+import java.util.List;
 
+public class Question {
     private final String body;
-    private final String[] answerOptions;
+    private final List<String> answerOptions;
 
     public Question(String body, String... answerOptions) {
         this.body = body;
-        this.answerOptions = answerOptions;
+        this.answerOptions = List.of(answerOptions);
+    }
+
+    public Question(String body, List<String> answerOptions) {
+        this.body = body;
+        this.answerOptions = Collections.unmodifiableList(answerOptions);
     }
 
     public String getBody() {
         return this.body;
     }
 
-    public String[] getAnswerOptions() {
+    public List<String> getAnswerOptions() {
         return this.answerOptions;
     }
 
     public boolean hasAnswerOptions() {
-        return this.answerOptions != null && this.answerOptions.length > 0;
+        return this.answerOptions != null && this.answerOptions.size() > 0;
     }
 }

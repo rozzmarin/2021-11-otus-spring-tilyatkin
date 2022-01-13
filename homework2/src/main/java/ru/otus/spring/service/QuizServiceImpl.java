@@ -2,6 +2,8 @@ package ru.otus.spring.service;
 
 import ru.otus.spring.domain.Question;
 
+import java.util.List;
+
 public class QuizServiceImpl implements QuizService {
     private final QuestionService questionService;
     private final PrintQuestionService printQuestionService;
@@ -11,8 +13,9 @@ public class QuizServiceImpl implements QuizService {
         this.printQuestionService = printQuestionService;
     }
 
+    @Override
     public void start() {
-        Question[] questions = this.questionService.getAllQuestions();
+        List<Question> questions = this.questionService.getAllQuestions();
         for (Question question: questions) {
             this.printQuestionService.print(question);
         }

@@ -3,6 +3,9 @@ package ru.otus.spring.service;
 import ru.otus.spring.dao.QuestionDao;
 import ru.otus.spring.domain.Question;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class QuestionServiceImpl implements QuestionService {
     private final QuestionDao dao;
 
@@ -10,13 +13,14 @@ public class QuestionServiceImpl implements QuestionService {
         this.dao = dao;
     }
 
-    public Question[] getAllQuestions() {
+    @Override
+    public List<Question> getAllQuestions() {
         int questionsCount = this.dao.getCount();
-        Question[] questions = new Question[questionsCount];
+        List<Question> questionList = new ArrayList<>(questionsCount);
         for (int i = 0; i < questionsCount; i++){
             Question question = this.dao.getByIndex(i);
-            questions[i] = question;
+            questionList.add(question);
         }
-        return questions;
+        return questionList;
     }
 }

@@ -3,28 +3,36 @@ package ru.otus.spring.dao;
 import ru.otus.spring.domain.Question;
 import ru.otus.spring.util.csv.CSVReader;
 
-import java.io.*;
-import java.util.Arrays;
 import java.util.List;
 
 public class QuestionDaoCSV implements QuestionDao {
-    private final List<String[]> questionList;
+    private final CSVReader csvReader;
+    private List<List<String>> questionList;
 
-    public QuestionDaoCSV(CSVReader csvReader) throws IOException {
-        questionList = csvReader.readAll();
+    public QuestionDaoCSV(CSVReader csvReader) {
+        this.csvReader = csvReader;
     }
 
-    public int getCount() {
-        return questionList.size();
-    }
-
-    public Question getByIndex(int index) {
-        String[] questionRow = questionList.get(index);
-        String questionBody = questionRow[0];
-        String[] answerOptions = new String[0];
-        if (questionRow.length > 2) {
-            answerOptions = Arrays.copyOfRange(questionRow, 2, questionRow.length);
+    private List<List<String>> getQuestionList() {
+        if (questionList == null) {
+            questionList = csvReader.readAll();
         }
-        return new Question(questionBody, answerOptions);
+        return questionList;
+    }
+
+    @Override
+    public int getCount() {
+        return getQuestionList().size();
+    }
+
+    @Override
+    public Question getByIndex(int index) {
+        List<String> questionRow = getQuestionList().get(index);
+        String questionBody = questionRow.get(0);
+        if (questionRow.size() > 2) {
+            List<String> answerOptions = questionRow.subList(2, questionRow.size());
+            return new Question(questionBody, answerOptions);
+        }
+        return new Question(questionBody);
     }
 }
