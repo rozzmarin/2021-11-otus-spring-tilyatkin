@@ -1,12 +1,16 @@
 package ru.otus.spring.util.csv;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import java.io.*;
 import java.util.*;
 
+@Component
 public class ResourceCSVReader implements CSVReader {
     private final String csvLocation;
 
-    public ResourceCSVReader(String csvLocation) {
+    public ResourceCSVReader(@Value("${quest.location}") String csvLocation) {
         this.csvLocation = csvLocation;
     }
 

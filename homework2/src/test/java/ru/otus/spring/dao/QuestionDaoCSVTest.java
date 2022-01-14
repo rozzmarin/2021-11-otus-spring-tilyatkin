@@ -8,7 +8,6 @@ import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import ru.otus.spring.util.csv.CSVReader;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -18,7 +17,7 @@ public class QuestionDaoCSVTest {
     private QuestionDaoCSV questionDao;
 
     @BeforeAll
-    void setup() throws IOException {
+    void setup() {
         CSVReader csvReader = Mockito.mock(CSVReader.class);
         BDDMockito.given(csvReader.readAll())
                 .willReturn(Arrays.asList(
