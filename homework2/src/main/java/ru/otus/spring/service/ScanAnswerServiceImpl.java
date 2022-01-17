@@ -8,9 +8,17 @@ import java.util.Scanner;
 
 @Service
 public class ScanAnswerServiceImpl implements ScanAnswerService {
+    @Override
+    public Answer scan(List<String> answerOptions) {
+        String input = answerOptions != null && answerOptions.size() > 0 ?
+                getOptionAnswerInput(answerOptions) :
+                getAnswerInput();
+        return new Answer(input);
+    }
+
     private String getOptionAnswerInput(List<String> answerOptions) {
         Scanner scanner = new Scanner(System.in);
-        int inputInt = 0;
+        int inputInt;
         do {
             System.out.print("Enter number of answer option: ");
             String inputStr = scanner.nextLine();
@@ -35,14 +43,5 @@ public class ScanAnswerServiceImpl implements ScanAnswerService {
         }
         while (input.trim().equals(""));
         return input;
-    }
-
-    @Override
-    public Answer scan(List<String> answerOptions) {
-        String input = answerOptions != null && answerOptions.size() > 0 ?
-                getOptionAnswerInput(answerOptions) :
-                getAnswerInput();
-        Answer answer = new Answer(input);
-        return answer;
     }
 }
