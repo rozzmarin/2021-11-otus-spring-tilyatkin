@@ -1,4 +1,4 @@
-package ru.otus.spring.service;
+package ru.otus.spring.service.print;
 
 import ru.otus.spring.domain.Question;
 

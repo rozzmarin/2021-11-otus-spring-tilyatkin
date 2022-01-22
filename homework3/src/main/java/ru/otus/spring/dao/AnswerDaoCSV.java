@@ -3,13 +3,14 @@ package ru.otus.spring.dao;
 import org.springframework.stereotype.Repository;
 import ru.otus.spring.domain.Answer;
 import ru.otus.spring.util.csv.CSVReader;
+import ru.otus.spring.util.localization.LocaleProvider;
 
 import java.util.List;
 
 @Repository
 public class AnswerDaoCSV extends AbstractDaoCSV implements AnswerDao {
-    public AnswerDaoCSV(CSVReader csvReader) {
-        super(csvReader);
+    public AnswerDaoCSV(CSVReader csvReader, LocaleProvider localeProvider) {
+        super(csvReader, localeProvider);
     }
 
     @Override

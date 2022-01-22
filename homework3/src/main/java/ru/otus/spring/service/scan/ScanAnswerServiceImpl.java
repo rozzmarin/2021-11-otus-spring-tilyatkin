@@ -1,13 +1,18 @@
-package ru.otus.spring.service;
+package ru.otus.spring.service.scan;
 
 import org.springframework.stereotype.Service;
 import ru.otus.spring.domain.Answer;
+import ru.otus.spring.util.localization.CustomMessageSource;
 
 import java.util.List;
 import java.util.Scanner;
 
 @Service
-public class ScanAnswerServiceImpl implements ScanAnswerService {
+public class ScanAnswerServiceImpl extends AbstractScanService implements ScanAnswerService {
+    public ScanAnswerServiceImpl(CustomMessageSource messageSource) {
+        super(messageSource);
+    }
+
     @Override
     public Answer scan(List<String> answerOptions) {
         String input = answerOptions != null && answerOptions.size() > 0 ?
@@ -17,10 +22,11 @@ public class ScanAnswerServiceImpl implements ScanAnswerService {
     }
 
     private String getOptionAnswerInput(List<String> answerOptions) {
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(this.getIn());
         int inputInt;
         do {
-            System.out.print("Enter number of answer option: ");
+            this.getOut().println();
+            this.getOut().printf("%s: ", this.getMessage("quiz.answer.label-with-options"));
             String inputStr = scanner.nextLine();
             try {
                 inputInt = Integer.parseInt(inputStr);
@@ -35,10 +41,11 @@ public class ScanAnswerServiceImpl implements ScanAnswerService {
     }
 
     private String getAnswerInput() {
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(this.getIn());
         String input;
         do {
-            System.out.print("Enter answer: ");
+            this.getOut().println();
+            this.getOut().printf("%s: ", this.getMessage("quiz.answer.label"));
             input = scanner.nextLine();
         }
         while (input.trim().equals(""));

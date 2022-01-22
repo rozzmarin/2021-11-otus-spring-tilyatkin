@@ -7,8 +7,10 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import ru.otus.spring.util.csv.CSVReader;
+import ru.otus.spring.util.localization.LocaleProvider;
 
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Objects;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -18,7 +20,10 @@ public class AnswerDaoCSVTest {
     @BeforeAll
     void setup() {
         CSVReader csvReader = Mockito.mock(CSVReader.class);
-        BDDMockito.given(csvReader.readAll())
+        LocaleProvider localeProvider = Mockito.mock(LocaleProvider.class);
+        BDDMockito.given(localeProvider.getLocale())
+                .willReturn(Locale.US);
+        BDDMockito.given(csvReader.readAll(Locale.US))
                 .willReturn(Arrays.asList(
                         Arrays.asList("Question 1", "Answer 1"),
                         Arrays.asList("Question 2", "Answer 2"),
@@ -26,7 +31,7 @@ public class AnswerDaoCSVTest {
                         Arrays.asList("Question 4", "Answer 4"),
                         Arrays.asList("Question 5", "Answer 5")
                 ));
-        answerDao = new AnswerDaoCSV(csvReader);
+        answerDao = new AnswerDaoCSV(csvReader, localeProvider);
     }
 
     @Test

@@ -7,10 +7,11 @@ import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.otus.spring.dao.AnswerDao;
 import ru.otus.spring.domain.Answer;
 import ru.otus.spring.domain.Question;
 import ru.otus.spring.domain.QuizResult;
+import ru.otus.spring.service.print.PrintQuestionService;
+import ru.otus.spring.service.scan.ScanAnswerService;
 
 import java.util.List;
 

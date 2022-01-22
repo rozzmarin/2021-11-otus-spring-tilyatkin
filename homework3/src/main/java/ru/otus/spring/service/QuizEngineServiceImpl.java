@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import ru.otus.spring.domain.Answer;
 import ru.otus.spring.domain.Question;
 import ru.otus.spring.domain.QuizResult;
+import ru.otus.spring.service.print.PrintQuestionService;
+import ru.otus.spring.service.scan.ScanAnswerService;
 
 import java.util.List;
 

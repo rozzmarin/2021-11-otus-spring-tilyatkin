@@ -1,4 +1,4 @@
-package ru.otus.spring.service;
+package ru.otus.spring.service.scan;
 
 public interface ScanContinuationService {
     boolean scan();
