@@ -14,7 +14,7 @@ public class PrintQuizResultServiceImpl extends AbstractPrintService implements 
     @Override
     public void print(Student student, QuizResult quizResult) {
         this.getOut().println();
-        this.getOut().print(this.getMessage("quiz.result"
+        this.getOut().println(this.getMessage("quiz.result"
                 , student.getName()
                 , quizResult.getCorrectAnswersCount()
                 , quizResult.getAnswersCount()));

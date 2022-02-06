@@ -4,18 +4,30 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.otus.spring.dao.QuestionDao;
 import ru.otus.spring.domain.Question;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@ExtendWith(SpringExtension.class)
 public class QuestionServiceImplTest {
-    @Mock
+    @MockBean
     private QuestionDao questionDao;
-    @InjectMocks
-    private QuestionServiceImpl questionService;
+    @Autowired
+    private QuestionService questionService;
+
+    @Configuration
+    static class NestedConfiguration {
+        @Bean
+        QuestionService questionService(QuestionDao questionDao) {
+            return new QuestionServiceImpl(questionDao);
+        }
+    }
 
     @Test
     void getAllQuestions() {

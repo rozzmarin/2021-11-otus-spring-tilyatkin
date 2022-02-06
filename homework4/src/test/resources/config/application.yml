@@ -3,6 +3,5 @@ spring:
     fallback-to-system-locale: false
   main:
     allow-circular-references: true
-
-quest:
-  location: questionnaire
+  shell:
+    interactive: false

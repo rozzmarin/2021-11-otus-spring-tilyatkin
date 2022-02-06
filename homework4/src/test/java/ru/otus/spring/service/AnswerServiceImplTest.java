@@ -4,18 +4,30 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.otus.spring.dao.AnswerDao;
 import ru.otus.spring.domain.Answer;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@ExtendWith(SpringExtension.class)
 public class AnswerServiceImplTest {
-    @Mock
+    @MockBean
     private AnswerDao answerDao;
-    @InjectMocks
-    private AnswerServiceImpl answerService;
+    @Autowired
+    private AnswerService answerService;
+
+    @Configuration
+    static class NestedConfiguration {
+        @Bean
+        AnswerService answerService(AnswerDao answerDao) {
+            return new AnswerServiceImpl(answerDao);
+        }
+    }
 
     @Test
     void checkCorrectAnswer() {

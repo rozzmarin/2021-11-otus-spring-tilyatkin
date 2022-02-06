@@ -1,11 +1,16 @@
 package ru.otus.spring.dao;
 
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
-import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.otus.spring.util.csv.CSVReader;
 import ru.otus.spring.util.localization.LocaleProvider;
 
@@ -14,14 +19,23 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@SpringBootTest
+@ExtendWith(SpringExtension.class)
 public class QuestionDaoCSVTest {
+    @MockBean
+    private CSVReader csvReader;
+    @MockBean
+    private LocaleProvider localeProvider;
+    @Autowired
     private QuestionDaoCSV questionDao;
 
-    @BeforeAll
+    @ComponentScan("ru.otus.spring.dao")
+    @Configuration
+    static class NestedConfiguration {
+    }
+
+    @BeforeEach
     void setup() {
-        CSVReader csvReader = Mockito.mock(CSVReader.class);
-        LocaleProvider localeProvider = Mockito.mock(LocaleProvider.class);
         BDDMockito.given(localeProvider.getLocale())
                 .willReturn(Locale.US);
         BDDMockito.given(csvReader.readAll(Locale.US))
@@ -32,7 +46,6 @@ public class QuestionDaoCSVTest {
                         Arrays.asList("Question 4", "", "Option 4.1", "Option 4.2", "Option 4.3", "Option 4.4"),
                         Arrays.asList("Question 5", "", "Option 5.1", "Option 5.2", "Option 5.3", "Option 5.4")
                 ));
-        questionDao = new QuestionDaoCSV(csvReader, localeProvider);
     }
 
     @Test

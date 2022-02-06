@@ -4,9 +4,12 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.otus.spring.domain.Answer;
 import ru.otus.spring.domain.Question;
 import ru.otus.spring.domain.QuizResult;
@@ -15,18 +18,33 @@ import ru.otus.spring.service.scan.ScanAnswerService;
 
 import java.util.List;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@ExtendWith(SpringExtension.class)
 public class QuizEngineServiceImplTest {
-    @Mock
+    @MockBean
     private QuestionService questionService;
-    @Mock
+    @MockBean
     private PrintQuestionService printQuestionService;
-    @Mock
+    @MockBean
     private AnswerService answerService;
-    @Mock
+    @MockBean
     private ScanAnswerService scanAnswerService;
-    @InjectMocks
-    private QuizEngineServiceImpl quizEngineService;
+    @Autowired
+    private QuizEngineService quizEngineService;
+
+    @Configuration
+    static class NestedConfiguration {
+        @Bean
+        QuizEngineService quizEngineService(QuestionService questionService,
+                                            PrintQuestionService printQuestionService,
+                                            AnswerService answerService,
+                                            ScanAnswerService scanAnswerService) {
+            return new QuizEngineServiceImpl(questionService,
+                    printQuestionService,
+                    answerService,
+                    scanAnswerService);
+        }
+    }
 
     @Test
     void canContinue() {
