@@ -1,0 +1,8 @@
+spring:
+  main:
+    allow-circular-references: true
+  sql:
+    init:
+      mode: embedded
+      data-locations: db/data.sql
+      schema-locations: db/schema.sql
