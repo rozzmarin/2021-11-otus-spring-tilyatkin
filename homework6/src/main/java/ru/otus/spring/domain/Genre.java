@@ -1,19 +1,27 @@
 package ru.otus.spring.domain;
 
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.Type;
 
-@RequiredArgsConstructor
+import javax.persistence.*;
+
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
+@Builder
+@Entity
+@Table(name = "GENRE")
 public class Genre {
-    private final GenreId genreId;
-    private final String title;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Type(type = "ru.otus.spring.repository.hibernate.type.GenreIdType", parameters = @org.hibernate.annotations.Parameter(name = "idColumn", value = "GENRE_ID"))
+    @Column(name = "GENRE_ID", nullable = false)
+    private GenreId genreId;
+
+    @Column(name = "TITLE", nullable = false, unique = true)
+    private String title;
 
     public Genre(GenreId genreId) {
-        this(genreId, null);
-    }
-
-    public Genre(String title) {
-        this(null, title);
+        this.genreId = genreId;
     }
 }

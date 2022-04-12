@@ -18,4 +18,8 @@ public class GenreFilter {
     public boolean isTitleSpecified() {
         return title != null && !title.isEmpty();
     }
+
+    public boolean isSpecified() {
+        return isGenreIdsSpecified() || isTitleSpecified();
+    }
 }

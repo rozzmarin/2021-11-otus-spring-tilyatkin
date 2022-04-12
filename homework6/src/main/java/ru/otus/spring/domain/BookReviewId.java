@@ -7,6 +7,6 @@ import java.io.Serializable;
 
 @RequiredArgsConstructor
 @Data
-public class AuthorId implements Serializable {
-    private final long authorId;
+public class BookReviewId implements Serializable {
+    private final long bookReviewId;
 }

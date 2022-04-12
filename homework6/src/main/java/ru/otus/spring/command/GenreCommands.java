@@ -9,7 +9,7 @@ import ru.otus.spring.domain.Genre;
 import ru.otus.spring.domain.GenreFilter;
 import ru.otus.spring.domain.GenreId;
 import ru.otus.spring.service.GenreService;
-import ru.otus.spring.service.Printer;
+import ru.otus.spring.printer.Printer;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,7 +30,7 @@ public class GenreCommands {
                 .build());
         return genres
                 .stream()
-                .map(genrePrinter::printWithId)
+                .map(genrePrinter::fullPrint)
                 .collect(Collectors.joining("\n"));
     }
 
@@ -38,9 +38,11 @@ public class GenreCommands {
     public String addGenre(
             @ShellOption(help = "Genre's title") String title
     ) {
-        Genre newGenre = genreService.add(new Genre(title));
+        Genre newGenre = genreService.add(Genre.builder()
+                .title(title)
+                .build());
         return newGenre != null ?
-                genrePrinter.printWithId(newGenre) :
+                genrePrinter.fullPrint(newGenre) :
                 "Unable to add genre";
     }
 
@@ -49,9 +51,11 @@ public class GenreCommands {
             @ShellOption(help = "Genre's id") GenreId genreId,
             @ShellOption(help = "Genre's title") String title
     ) {
-        Genre newGenre = genreService.edit(new Genre(genreId, title));
+        Genre genre = genreService.find(genreId);
+        genre.setTitle(title);
+        Genre newGenre = genreService.edit(genre);
         return newGenre != null ?
-                genrePrinter.printWithId(newGenre) :
+                genrePrinter.fullPrint(newGenre) :
                 "Unable to edit genre";
     }
 

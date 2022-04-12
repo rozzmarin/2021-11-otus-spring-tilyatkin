@@ -18,4 +18,8 @@ public class AuthorFilter {
     public boolean isNameSpecified() {
         return name != null && !name.isEmpty();
     }
+
+    public boolean isSpecified() {
+        return isAuthorIdsSpecified() || isNameSpecified();
+    }
 }

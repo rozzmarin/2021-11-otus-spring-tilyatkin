@@ -1,4 +1,4 @@
-package ru.otus.spring.dao;
+package ru.otus.spring.repository;
 
 import ru.otus.spring.domain.Author;
 import ru.otus.spring.domain.AuthorFilter;
@@ -6,7 +6,7 @@ import ru.otus.spring.domain.AuthorId;
 
 import java.util.List;
 
-public interface AuthorDao {
+public interface AuthorRepository {
     long count(AuthorFilter filter);
 
     Author get(AuthorId id);

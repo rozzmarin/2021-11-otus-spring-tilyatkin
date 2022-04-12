@@ -9,10 +9,9 @@ import ru.otus.spring.domain.Author;
 import ru.otus.spring.domain.AuthorFilter;
 import ru.otus.spring.domain.AuthorId;
 import ru.otus.spring.service.AuthorService;
-import ru.otus.spring.service.Printer;
+import ru.otus.spring.printer.Printer;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,7 +33,7 @@ public class AuthorCommands {
                 .build());
         return authors
                 .stream()
-                .map(authorPrinter::printWithId)
+                .map(authorPrinter::fullPrint)
                 .collect(Collectors.joining("\n"));
     }
 
@@ -43,9 +42,12 @@ public class AuthorCommands {
             @ShellOption(help = "Author's last name") String lastName,
             @ShellOption(help = "Author's first name") String firstName
     ) {
-        Author newAuthor = authorService.add(new Author(lastName, firstName));
+        Author newAuthor = authorService.add(Author.builder()
+                .lastname(lastName)
+                .firstname(firstName)
+                .build());
         return newAuthor != null ?
-                authorPrinter.printWithId(newAuthor) :
+                authorPrinter.fullPrint(newAuthor) :
                 "Unable to add author";
     }
 
@@ -56,15 +58,15 @@ public class AuthorCommands {
             @ShellOption(help = "Author's first name", defaultValue = "") String firstName
     ) {
         Author author = authorService.find(authorId);
-        if (lastName.equals("")) {
-            lastName = author.getLastname();
+        if (!lastName.equals("")) {
+            author.setLastname(lastName);
         }
-        if (firstName.equals("")) {
-            firstName = author.getFirstname();
+        if (!firstName.equals("")) {
+            author.setFirstname(firstName);
         }
-        Author newAuthor = authorService.edit(new Author(authorId, lastName, firstName));
+        Author newAuthor = authorService.edit(author);
         return newAuthor != null ?
-                authorPrinter.printWithId(newAuthor) :
+                authorPrinter.fullPrint(newAuthor) :
                 "Unable to edit author";
     }
 

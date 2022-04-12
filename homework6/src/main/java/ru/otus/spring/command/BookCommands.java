@@ -7,7 +7,7 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 import ru.otus.spring.domain.*;
 import ru.otus.spring.service.BookService;
-import ru.otus.spring.service.Printer;
+import ru.otus.spring.printer.Printer;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,6 +23,7 @@ public class BookCommands {
     public String getBooks(
             @ShellOption(help = "Book's id(s)", defaultValue = "") Set<BookId> bookIds,
             @ShellOption(help = "Book's title", defaultValue = "") String title,
+            @ShellOption(help = "Book's reviews count", defaultValue = "") Long reviewsCount,
             @ShellOption(help = "Author's id(s)", defaultValue = "") Set<AuthorId> authorIds,
             @ShellOption(help = "Author's name", defaultValue = "") String authorName,
             @ShellOption(help = "Genre's id(s)", defaultValue = "") Set<GenreId> genreIds,
@@ -31,6 +32,7 @@ public class BookCommands {
         List<Book> books = bookService.find(BookFilter.builder()
                 .bookIds(bookIds)
                 .title(title)
+                .reviewsCount(reviewsCount)
                 .authorFilter(AuthorFilter.builder()
                         .authorIds(authorIds)
                         .name(authorName)
@@ -42,7 +44,7 @@ public class BookCommands {
                 .build());
         return books
                 .stream()
-                .map(bookPrinter::printWithId)
+                .map(bookPrinter::fullPrint)
                 .collect(Collectors.joining("\n"));
     }
 
@@ -58,9 +60,13 @@ public class BookCommands {
         Set<Genre> genres = genreIds.stream()
                 .map(Genre::new)
                 .collect(Collectors.toSet());
-        Book newBook = bookService.add(new Book(title, authors, genres));
+        Book newBook = bookService.add(Book.builder()
+                .title(title)
+                .authors(authors)
+                .genres(genres)
+                .build());
         return newBook != null ?
-                bookPrinter.printWithId(newBook) :
+                bookPrinter.fullPrint(newBook) :
                 "Unable to add book";
     }
 
@@ -75,24 +81,22 @@ public class BookCommands {
         if (book == null) {
             return "Unable to eidt book";
         }
-        if (title.equals("")) {
-            title = book.getTitle();
+        if (!title.equals("")) {
+            book.setTitle(title);
         }
-        Set<Author> authors = book.getAuthors();
         if (authorIds != null) {
-            authors = authorIds.stream()
+            book.setAuthors(authorIds.stream()
                     .map(Author::new)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toSet()));
         }
-        Set<Genre> genres = book.getGenres();
         if (genreIds != null) {
-            genres = genreIds.stream()
+            book.setGenres(genreIds.stream()
                     .map(Genre::new)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toSet()));
         }
-        Book newBook = bookService.edit(new Book(bookId, title, authors, genres));
+        Book newBook = bookService.edit(book);
         return newBook != null ?
-                bookPrinter.printWithId(newBook) :
+                bookPrinter.fullPrint(newBook) :
                 "Unable to edit book";
     }
 

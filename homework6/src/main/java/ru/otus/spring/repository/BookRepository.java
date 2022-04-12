@@ -1,4 +1,4 @@
-package ru.otus.spring.dao;
+package ru.otus.spring.repository;
 
 import ru.otus.spring.domain.Book;
 import ru.otus.spring.domain.BookFilter;
@@ -6,7 +6,7 @@ import ru.otus.spring.domain.BookId;
 
 import java.util.List;
 
-public interface BookDao {
+public interface BookRepository {
     long count(BookFilter filter);
 
     Book get(BookId id);

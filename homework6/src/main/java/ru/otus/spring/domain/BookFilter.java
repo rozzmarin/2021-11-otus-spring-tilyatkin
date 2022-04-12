@@ -10,6 +10,7 @@ import java.util.Set;
 public class BookFilter {
     private final Set<BookId> bookIds;
     private final String title;
+    private final Long reviewsCount;
     private final AuthorFilter authorFilter;
     private final GenreFilter genreFilter;
 
@@ -21,29 +22,15 @@ public class BookFilter {
         return title != null && !title.isEmpty();
     }
 
+    public boolean isReviewsCountSpecified() {
+        return reviewsCount != null;
+    }
+
     public boolean isAuthorFilterSpecified() {
-        return authorFilter != null;
+        return authorFilter != null && authorFilter.isSpecified();
     }
 
     public boolean isGenreFilterSpecified() {
-        return genreFilter != null;
+        return genreFilter != null && genreFilter.isSpecified();
     }
-
-    /*
-    public boolean isAuthorIdSpecified() {
-        return authorId != 0;
-    }
-
-    public boolean isAuthorNameSpecified() {
-        return authorName != null && !authorName.isEmpty();
-    }
-
-    public boolean isGenreIdSpecified() {
-        return genreId != 0;
-    }
-
-    public boolean isGenreTitleSpecified() {
-        return genreTitle != null && !genreTitle.isEmpty();
-    }
-    */
 }

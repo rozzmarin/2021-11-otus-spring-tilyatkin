@@ -1,11 +1,10 @@
-package ru.otus.spring.dao;
+package ru.otus.spring.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import ru.otus.spring.dao.exception.ObjectNotFoundException;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import ru.otus.spring.repository.exception.ObjectNotFoundException;
 import ru.otus.spring.domain.Genre;
 import ru.otus.spring.domain.GenreFilter;
 import ru.otus.spring.domain.GenreId;
@@ -15,34 +14,50 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@JdbcTest
-public class GenreDaoJdbcTest {
-    private static final Genre genre1 = new Genre(new GenreId(1), "Роман");
-    private static final Genre genre1ToEdit = new Genre(new GenreId(1), "Роман в стихах");
-    private static final Genre genre1AfterEdit = new Genre(new GenreId(1), "Роман в стихах");
-    private static final Genre genre2 = new Genre(new GenreId(2), "Поэма");
-    private static final Genre genre3 = new Genre(new GenreId(3), "Эпопея");
-    private static final Genre genre4ToAdd = new Genre("Повесть");
-    private static final Genre genre4AfterAdd = new Genre(new GenreId(4), "Повесть");
+@DataJpaTest
+@Import(GenreRepositoryJpa.class)
+public class GenreRepositoryJpaTest {
+    private static final Genre genre1 = Genre.builder()
+            .genreId(new GenreId(1))
+            .title("Роман")
+            .build();
+    private static final Genre genre1ToEdit = Genre.builder()
+            .genreId(new GenreId(1))
+            .title("Роман в стихах")
+            .build();
+    private static final Genre genre1AfterEdit = Genre.builder()
+            .genreId(new GenreId(1))
+            .title("Роман в стихах")
+            .build();
+    private static final Genre genre2 = Genre.builder()
+            .genreId(new GenreId(2))
+            .title("Поэма")
+            .build();
+    private static final Genre genre3 = Genre.builder()
+            .genreId(new GenreId(3))
+            .title("Эпопея")
+            .build();
+    private static final Genre genre4ToAdd = Genre.builder()
+            .title("Повесть")
+            .build();
+    private static final Genre genre4AfterAdd = Genre.builder()
+            .genreId(new GenreId(4))
+            .title("Повесть")
+            .build();
 
     @Autowired
-    private GenreDaoJdbc genreDao;
-
-    @ComponentScan("ru.otus.spring.dao")
-    @Configuration
-    static class NestedConfiguration {
-    }
+    private GenreRepositoryJpa genreRepository;
 
     @Test
     void shouldReturnAllGenresCount() {
-        long expectedGenresCount = genreDao.count(GenreFilter.builder().build());
+        long expectedGenresCount = genreRepository.count(GenreFilter.builder().build());
         assertThat(expectedGenresCount)
                 .isEqualTo(3);
     }
 
     @Test
     void shouldReturnFilteredGenresCount() {
-        long expectedGenresCount = genreDao.count(GenreFilter.builder()
+        long expectedGenresCount = genreRepository.count(GenreFilter.builder()
                 .title("Роман")
                 .build());
         assertThat(expectedGenresCount)
@@ -51,7 +66,7 @@ public class GenreDaoJdbcTest {
 
     @Test
     void shouldReturnGenre() {
-        Genre actualGenre = genreDao.get(new GenreId(1));
+        Genre actualGenre = genreRepository.get(new GenreId(1));
         assertThat(actualGenre)
                 .usingRecursiveComparison()
                 .isEqualTo(genre1);
@@ -59,7 +74,7 @@ public class GenreDaoJdbcTest {
 
     @Test
     void shouldReturnAllGenres() {
-        List<Genre> actualGenres = genreDao.get(GenreFilter.builder().build());
+        List<Genre> actualGenres = genreRepository.get(GenreFilter.builder().build());
         assertThat(actualGenres)
                 .usingRecursiveFieldByFieldElementComparator()
                 .containsExactlyInAnyOrderElementsOf(List.of(genre1, genre2, genre3));
@@ -67,7 +82,7 @@ public class GenreDaoJdbcTest {
 
     @Test
     void shouldReturnFilteredGenres() {
-        List<Genre> actualGenres = genreDao.get(GenreFilter.builder()
+        List<Genre> actualGenres = genreRepository.get(GenreFilter.builder()
                 .title("Роман")
                 .build());
         assertThat(actualGenres)
@@ -77,11 +92,11 @@ public class GenreDaoJdbcTest {
 
     @Test
     void shouldInsertGenre() {
-        GenreId actualGenreId = genreDao.insert(genre4ToAdd);
+        GenreId actualGenreId = genreRepository.insert(genre4ToAdd);
         assertThat(actualGenreId)
                 .isNotNull()
                 .isEqualTo(genre4AfterAdd.getGenreId());
-        Genre actualGenre = genreDao.get(actualGenreId);
+        Genre actualGenre = genreRepository.get(actualGenreId);
         assertThat(actualGenre)
                 .isNotNull()
                 .usingRecursiveComparison()
@@ -90,11 +105,11 @@ public class GenreDaoJdbcTest {
 
     @Test
     void shouldUpdateGenre() {
-        GenreId actualGenreId = genreDao.update(genre1ToEdit);
+        GenreId actualGenreId = genreRepository.update(genre1ToEdit);
         assertThat(actualGenreId)
                 .isNotNull()
                 .isEqualTo(genre1AfterEdit.getGenreId());
-        Genre actualGenre = genreDao.get(actualGenreId);
+        Genre actualGenre = genreRepository.get(actualGenreId);
         assertThat(actualGenre)
                 .isNotNull()
                 .usingRecursiveComparison()
@@ -104,23 +119,23 @@ public class GenreDaoJdbcTest {
     @Test
     void shouldDeleteGenreWithoutBooks() {
         GenreId genreId = new GenreId(2);
-        Genre actualGenre = genreDao.get(genreId);
+        Genre actualGenre = genreRepository.get(genreId);
         assertThat(actualGenre)
                 .isNotNull();
-        GenreId actualGenreId = genreDao.delete(genreId);
+        GenreId actualGenreId = genreRepository.delete(genreId);
         assertThat(actualGenreId)
                 .isNotNull()
                 .isEqualTo(genreId);
-        assertThatThrownBy(() -> genreDao.get(genreId))
+        assertThatThrownBy(() -> genreRepository.get(genreId))
                 .isInstanceOf(ObjectNotFoundException.class);
     }
 
     @Test
     void shouldNotDeleteGenreWithBooks() {
         GenreId genreId = new GenreId(1);
-        Genre actualGenre = genreDao.get(genreId);
+        Genre actualGenre = genreRepository.get(genreId);
         assertThat(actualGenre)
                 .isNotNull();
-        assertThatThrownBy(() -> genreDao.delete(genreId));
+        assertThatThrownBy(() -> genreRepository.delete(genreId));
     }
 }

@@ -1,17 +1,18 @@
-package ru.otus.spring.service;
+package ru.otus.spring.printer;
 
 import org.springframework.stereotype.Service;
 import ru.otus.spring.domain.Author;
+import ru.otus.spring.util.StringUtils;
 
 @Service
 public class AuthorPrinter implements Printer<Author> {
     @Override
-    public String print(Author object) {
-        return String.format("%s, %s", object.getLastname(), object.getFirstname());
+    public String shortPrint(Author object) {
+        return String.format("%s %s", StringUtils.toShortName(object.getFirstname()), object.getLastname());
     }
 
     @Override
-    public String printWithId(Author object) {
+    public String fullPrint(Author object) {
         return String.format("%d. %s, %s", object.getAuthorId().getAuthorId(), object.getLastname(), object.getFirstname());
     }
 }

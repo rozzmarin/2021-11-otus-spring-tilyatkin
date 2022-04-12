@@ -1,4 +1,4 @@
-package ru.otus.spring.service;
+package ru.otus.spring.printer;
 
 import org.springframework.stereotype.Service;
 import ru.otus.spring.domain.Genre;
@@ -6,12 +6,12 @@ import ru.otus.spring.domain.Genre;
 @Service
 public class GenrePrinter implements Printer<Genre> {
     @Override
-    public String print(Genre object) {
+    public String shortPrint(Genre object) {
         return String.format("%s", object.getTitle());
     }
 
     @Override
-    public String printWithId(Genre object) {
+    public String fullPrint(Genre object) {
         return String.format("%d. %s", object.getGenreId().getGenreId(), object.getTitle());
     }
 }
