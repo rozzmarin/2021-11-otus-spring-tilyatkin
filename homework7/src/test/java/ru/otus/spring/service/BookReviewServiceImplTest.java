@@ -12,8 +12,10 @@ import ru.otus.spring.domain.*;
 import ru.otus.spring.repository.AuthorRepository;
 import ru.otus.spring.repository.BookRepository;
 import ru.otus.spring.repository.BookReviewRepository;
+import ru.otus.spring.repository.specification.BookReviewSpecification;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -71,7 +73,7 @@ public class BookReviewServiceImplTest {
             .build();
     private static final BookReview bookReview2AfterEdit = BookReview.builder()
             .bookReviewId(new BookReviewId(1))
-            .book(new Book(new BookId(2)))
+            .book(book2)
             .reviewerName("Вася Пупкин")
             .rating(9)
             .comment("Дочитал. Эпично")
@@ -90,7 +92,7 @@ public class BookReviewServiceImplTest {
             .build();
     private static final BookReview bookReview3AfterAdd = BookReview.builder()
             .bookReviewId(new BookReviewId(3))
-            .book(new Book(new BookId(2)))
+            .book(book2)
             .reviewerName("Иван Иванович")
             .rating(10)
             .comment("Настольная книга")
@@ -114,8 +116,8 @@ public class BookReviewServiceImplTest {
     @Test
     void shouldReturnBookReview() {
         BookReviewId bookReviewId = new BookReviewId(1);
-        given(bookReviewRepository.get(bookReviewId))
-                .willReturn(bookReview1);
+        given(bookReviewRepository.findById(bookReviewId))
+                .willReturn(Optional.of(bookReview1));
 
         BookReview actualBookReview = bookReviewService.find(bookReviewId);
         assertThat(actualBookReview)
@@ -126,7 +128,7 @@ public class BookReviewServiceImplTest {
     @Test
     void shouldReturnBookReviews() {
         BookReviewFilter filter = BookReviewFilter.builder().build();
-        given(bookReviewRepository.get(filter))
+        given(bookReviewRepository.findAll(BookReviewSpecification.of(filter)))
                 .willReturn(List.of(bookReview1, bookReview2));
 
         List<BookReview> actualBookReviews = bookReviewService.find(filter);
@@ -137,11 +139,9 @@ public class BookReviewServiceImplTest {
 
     @Test
     void shouldInsertBookReview() {
-        given(bookRepository.get(new BookId(2)))
-                .willReturn(book2);
-        given(bookReviewRepository.insert(bookReview3ToAddPrepared))
-                .willReturn(new BookReviewId(3));
-        given(bookReviewRepository.get(new BookReviewId(3)))
+        given(bookRepository.findById(new BookId(2)))
+                .willReturn(Optional.of(book2));
+        given(bookReviewRepository.save(bookReview3ToAddPrepared))
                 .willReturn(bookReview3AfterAdd);
 
         BookReview actualBookReview = bookReviewService.add(bookReview3ToAdd);
@@ -153,11 +153,9 @@ public class BookReviewServiceImplTest {
 
     @Test
     void shouldUpdateBookReview() {
-        given(bookRepository.get(new BookId(2)))
-                .willReturn(book2);
-        given(bookReviewRepository.update(bookReview2ToEditPrepared))
-                .willReturn(new BookReviewId(2));
-        given(bookReviewRepository.get(new BookReviewId(2)))
+        given(bookRepository.findById(new BookId(2)))
+                .willReturn(Optional.of(book2));
+        given(bookReviewRepository.save(bookReview2ToEditPrepared))
                 .willReturn(bookReview2AfterEdit);
 
         BookReview actualBookReview = bookReviewService.edit(bookReview2ToEdit);
@@ -170,8 +168,6 @@ public class BookReviewServiceImplTest {
     @Test
     void shouldDeleteBookReview() {
         BookReviewId bookReviewId = new BookReviewId(1);
-        given(bookReviewRepository.delete(bookReviewId))
-                .willReturn(bookReviewId);
 
         BookReviewId actualBookReviewId = bookReviewService.remove(bookReviewId);
         assertThat(actualBookReviewId)

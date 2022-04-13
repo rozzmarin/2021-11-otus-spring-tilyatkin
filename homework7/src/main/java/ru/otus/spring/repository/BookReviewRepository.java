@@ -1,26 +1,18 @@
 package ru.otus.spring.repository;
 
-import ru.otus.spring.domain.BookId;
-import ru.otus.spring.domain.BookReview;
-import ru.otus.spring.domain.BookReviewFilter;
-import ru.otus.spring.domain.BookReviewId;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import ru.otus.spring.domain.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 
-public interface BookReviewRepository {
-    long count(BookReviewFilter filter);
+public interface BookReviewRepository extends JpaRepository<BookReview, BookReviewId>, JpaSpecificationExecutor<BookReview>, BookReviewRepositoryCustom {
+    @EntityGraph("book-review-entity-graph-with-book-authors")
+    Optional<BookReview> findById(BookReviewId id);
 
-    Map<BookId, Long> countAtBooks(Set<BookId> bookIds);
-
-    BookReview get(BookReviewId id);
-
-    List<BookReview> get(BookReviewFilter filter);
-
-    BookReviewId insert(BookReview bookReview);
-
-    BookReviewId update(BookReview bookReview);
-
-    BookReviewId delete(BookReviewId id);
+    @EntityGraph("book-review-entity-graph-with-book-authors")
+    List<BookReview> findAll(Specification<BookReview> spec);
 }

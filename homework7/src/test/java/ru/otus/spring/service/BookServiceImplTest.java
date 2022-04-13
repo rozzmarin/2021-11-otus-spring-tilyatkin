@@ -13,9 +13,11 @@ import ru.otus.spring.repository.BookRepository;
 import ru.otus.spring.repository.BookReviewRepository;
 import ru.otus.spring.domain.*;
 import ru.otus.spring.repository.GenreRepository;
+import ru.otus.spring.repository.specification.BookSpecification;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -152,8 +154,8 @@ public class BookServiceImplTest {
     @Test
     void shouldReturnBook() {
         BookId bookId = new BookId(1);
-        given(bookRepository.get(bookId))
-                .willReturn(book1);
+        given(bookRepository.findById(bookId))
+                .willReturn(Optional.of(book1));
         given(bookReviewRepository.countAtBooks(Set.of(bookId)))
                 .willReturn(Map.of(bookId, 1L));
 
@@ -166,7 +168,7 @@ public class BookServiceImplTest {
     @Test
     void shouldReturnBooks() {
         BookFilter filter = BookFilter.builder().build();
-        given(bookRepository.get(filter))
+        given(bookRepository.findAll(BookSpecification.of(filter)))
                 .willReturn(List.of(book1, book2));
         given(bookReviewRepository.countAtBooks(Set.of(book1.getBookId(), book2.getBookId())))
                 .willReturn(Map.of(book1.getBookId(), 1L, book2.getBookId(), 1L));
@@ -179,15 +181,11 @@ public class BookServiceImplTest {
 
     @Test
     void shouldInsertBook() {
-        given(authorRepository.insert(author4ToAdd))
-                .willReturn(new AuthorId(4));
-        given(authorRepository.get(new AuthorId(4)))
+        given(authorRepository.save(author4ToAdd))
                 .willReturn(author4AfterAdd);
-        given(genreRepository.get(new GenreId(2)))
-                .willReturn(genre2);
-        given(bookRepository.insert(book3ToAddPrepared))
-                .willReturn(new BookId(3));
-        given(bookRepository.get(new BookId(3)))
+        given(genreRepository.findById(new GenreId(2)))
+                .willReturn(Optional.of(genre2));
+        given(bookRepository.save(book3ToAddPrepared))
                 .willReturn(book3AfterAdd);
 
         Book actualBook = bookService.add(book3ToAdd);
@@ -199,17 +197,13 @@ public class BookServiceImplTest {
 
     @Test
     void shouldUpdateBook() {
-        given(authorRepository.insert(author5ToAdd))
-                .willReturn(new AuthorId(5));
-        given(authorRepository.get(new AuthorId(5)))
+        given(authorRepository.save(author5ToAdd))
                 .willReturn(author5AfterAdd);
-        given(authorRepository.get(new AuthorId(2)))
-                .willReturn(author2);
-        given(genreRepository.get(new GenreId(1)))
-                .willReturn(genre1);
-        given(bookRepository.update(book2ToEditPrepared))
-                .willReturn(new BookId(2));
-        given(bookRepository.get(new BookId(2)))
+        given(authorRepository.findById(new AuthorId(2)))
+                .willReturn(Optional.of(author2));
+        given(genreRepository.findById(new GenreId(1)))
+                .willReturn(Optional.of(genre1));
+        given(bookRepository.save(book2ToEditPrepared))
                 .willReturn(book2AfterEdit);
 
         Book actualBook = bookService.edit(book2ToEdit);
@@ -222,8 +216,7 @@ public class BookServiceImplTest {
     @Test
     void shouldDeleteBook() {
         BookId bookId = new BookId(1);
-        given(bookRepository.delete(bookId))
-                .willReturn(bookId);
+
         BookId actualBookId = bookService.remove(bookId);
         assertThat(actualBookId)
                 .isNotNull()

@@ -8,6 +8,8 @@ import ru.otus.spring.repository.AuthorRepository;
 import ru.otus.spring.repository.BookRepository;
 import ru.otus.spring.repository.BookReviewRepository;
 import ru.otus.spring.repository.GenreRepository;
+import ru.otus.spring.repository.exception.ObjectNotFoundException;
+import ru.otus.spring.repository.specification.BookSpecification;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,7 +26,8 @@ public class BookServiceImpl implements BookService {
     @Transactional(readOnly = true)
     @Override
     public Book find(BookId id) {
-        Book book = bookRepository.get(id);
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(String.format("Book with id %s is not found", id.getBookId())));
         Map<BookId, Long> reviewCounts = bookReviewRepository.countAtBooks(Set.of(id));
         book.setReviewsCount(reviewCounts.getOrDefault(id, 0L));
         return book;
@@ -33,11 +36,15 @@ public class BookServiceImpl implements BookService {
     @Transactional(readOnly = true)
     @Override
     public List<Book> find(BookFilter filter) {
-        List<Book> books = bookRepository.get(filter);
+        List<Book> books = bookRepository.findAll(BookSpecification.of(filter));
         Map<BookId, Long> reviewCounts = bookReviewRepository.countAtBooks(books.stream()
                 .map(Book::getBookId)
                 .collect(Collectors.toSet()));
-        books.forEach(book -> book.setReviewsCount(reviewCounts.getOrDefault(book.getBookId(), 0L)));
+        books.forEach(book -> {
+            book.setReviewsCount(reviewCounts.getOrDefault(book.getBookId(), 0L));
+            book.getAuthors().size();
+            book.getGenres().size();
+        });
         return books;
     }
 
@@ -45,27 +52,20 @@ public class BookServiceImpl implements BookService {
     public Book add(Book book) {
         prepareAuthors(book);
         prepareGenres(book);
-        BookId bookId = bookRepository.insert(book);
-        if (bookId != null) {
-            return bookRepository.get(bookId);
-        }
-        return null;
+        return bookRepository.save(book);
     }
 
     @Override
     public Book edit(Book book) {
         prepareAuthors(book);
         prepareGenres(book);
-        BookId bookId = bookRepository.update(book);
-        if (bookId != null) {
-            return bookRepository.get(bookId);
-        }
-        return null;
+        return bookRepository.save(book);
     }
 
     @Override
     public BookId remove(BookId id) {
-        return bookRepository.delete(id);
+        bookRepository.deleteById(id);
+        return id;
     }
 
     private void prepareAuthors(Book book) {
@@ -73,9 +73,11 @@ public class BookServiceImpl implements BookService {
         for (Author author : book.getAuthors()) {
             AuthorId authorId = author.getAuthorId();
             if (authorId == null) {
-                authorId = authorRepository.insert(author);
+                author = authorRepository.save(author);
+            } else {
+                author = authorRepository.findById(authorId).orElseThrow();
             }
-            authors.add(authorRepository.get(authorId));
+            authors.add(author);
         }
         book.setAuthors(authors);
     }
@@ -85,9 +87,11 @@ public class BookServiceImpl implements BookService {
         for (Genre genre : book.getGenres()) {
             GenreId genreId = genre.getGenreId();
             if (genreId == null) {
-                genreId = genreRepository.insert(genre);
+                genre = genreRepository.save(genre);
+            } else {
+                genre = genreRepository.findById(genreId).orElseThrow();
             }
-            genres.add(genreRepository.get(genreId));
+            genres.add(genre);
         }
         book.setGenres(genres);
     }

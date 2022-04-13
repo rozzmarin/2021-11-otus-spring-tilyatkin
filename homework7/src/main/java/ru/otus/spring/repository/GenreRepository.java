@@ -1,21 +1,9 @@
 package ru.otus.spring.repository;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import ru.otus.spring.domain.Genre;
-import ru.otus.spring.domain.GenreFilter;
 import ru.otus.spring.domain.GenreId;
 
-import java.util.List;
-
-public interface GenreRepository {
-    long count(GenreFilter filter);
-
-    Genre get(GenreId id);
-
-    List<Genre> get(GenreFilter filter);
-
-    GenreId insert(Genre genre);
-
-    GenreId update(Genre genre);
-
-    GenreId delete(GenreId id);
+public interface GenreRepository extends JpaRepository<Genre, GenreId>, JpaSpecificationExecutor<Genre> {
 }

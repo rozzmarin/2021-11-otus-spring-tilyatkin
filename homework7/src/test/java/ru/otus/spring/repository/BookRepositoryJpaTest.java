@@ -3,18 +3,18 @@ package ru.otus.spring.repository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
 import ru.otus.spring.repository.exception.ObjectNotFoundException;
 import ru.otus.spring.domain.*;
+import ru.otus.spring.repository.specification.BookSpecification;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
-@Import(BookRepositoryJpa.class)
 public class BookRepositoryJpaTest {
     private static final Author author1 = Author.builder()
             .authorId(new AuthorId(1))
@@ -80,35 +80,35 @@ public class BookRepositoryJpaTest {
             .build();
 
     @Autowired
-    private BookRepositoryJpa bookRepository;
+    private BookRepository bookRepository;
 
     @Test
     void shouldReturnAllBooksCount() {
-        long expectedBooksCount = bookRepository.count(BookFilter.builder().build());
+        long expectedBooksCount = bookRepository.count(BookSpecification.of(BookFilter.builder().build()));
         assertThat(expectedBooksCount)
                 .isEqualTo(2);
     }
 
     @Test
     void shouldReturnFilteredBooksCount() {
-        long expectedBooksCount = bookRepository.count(BookFilter.builder()
+        long expectedBooksCount = bookRepository.count(BookSpecification.of(BookFilter.builder()
                 .title("Война")
-                .build());
+                .build()));
         assertThat(expectedBooksCount)
                 .isEqualTo(1);
 
-        expectedBooksCount = bookRepository.count(BookFilter.builder()
+        expectedBooksCount = bookRepository.count(BookSpecification.of(BookFilter.builder()
                 .authorFilter(AuthorFilter.builder()
                         .name("Александр")
                         .build())
                 .genreFilter(GenreFilter.builder()
                         .title("Роман")
                         .build())
-                .build());
+                .build()));
         assertThat(expectedBooksCount)
                 .isEqualTo(1);
 
-        expectedBooksCount = bookRepository.count(BookFilter.builder()
+        expectedBooksCount = bookRepository.count(BookSpecification.of(BookFilter.builder()
                 .title("Война")
                 .authorFilter(AuthorFilter.builder()
                         .name("Александр")
@@ -116,22 +116,22 @@ public class BookRepositoryJpaTest {
                 .genreFilter(GenreFilter.builder()
                         .title("Роман")
                         .build())
-                .build());
+                .build()));
         assertThat(expectedBooksCount)
                 .isEqualTo(0);
     }
 
     @Test
     void shouldReturnBook() {
-        Book actualBook = bookRepository.get(new BookId(1));
+        Optional<Book> actualBook = bookRepository.findById(new BookId(1));
         assertThat(actualBook)
-                .usingRecursiveComparison()
-                .isEqualTo(book1);
+                .isNotEmpty()
+                .hasValue(book1);
     }
 
     @Test
     void shouldReturnAllBooks() {
-        List<Book> actualBooks = bookRepository.get(BookFilter.builder().build());
+        List<Book> actualBooks = bookRepository.findAll(BookSpecification.of(BookFilter.builder().build()));
         assertThat(actualBooks)
                 .usingRecursiveFieldByFieldElementComparator()
                 .containsExactlyInAnyOrderElementsOf(List.of(book1, book2));
@@ -139,7 +139,7 @@ public class BookRepositoryJpaTest {
 
     @Test
     void shouldReturnFilteredBooks() {
-        List<Book> actualBooks = bookRepository.get(BookFilter.builder()
+        List<Book> actualBooks = bookRepository.findAll(BookSpecification.of(BookFilter.builder()
                 .reviewsCount(1L)
                 .authorFilter(AuthorFilter.builder()
                         .name("Александр")
@@ -147,7 +147,7 @@ public class BookRepositoryJpaTest {
                 .genreFilter(GenreFilter.builder()
                         .title("Роман")
                         .build())
-                .build());
+                .build()));
         assertThat(actualBooks)
                 .usingRecursiveFieldByFieldElementComparator()
                 .containsExactlyInAnyOrderElementsOf(List.of(book1));
@@ -155,11 +155,7 @@ public class BookRepositoryJpaTest {
 
     @Test
     void shouldInsertBook() {
-        BookId actualBookId = bookRepository.insert(book3ToAdd);
-        assertThat(actualBookId)
-                .isNotNull()
-                .isEqualTo(book3AfterAdd.getBookId());
-        Book actualBook = bookRepository.get(actualBookId);
+        Book actualBook = bookRepository.saveAndFlush(book3ToAdd);
         assertThat(actualBook)
                 .isNotNull()
                 .usingRecursiveComparison()
@@ -168,11 +164,7 @@ public class BookRepositoryJpaTest {
 
     @Test
     void shouldUpdateBook() {
-        BookId actualBookId = bookRepository.update(book2ToEdit);
-        assertThat(actualBookId)
-                .isNotNull()
-                .isEqualTo(book2AfterEdit.getBookId());
-        Book actualBook = bookRepository.get(actualBookId);
+        Book actualBook = bookRepository.saveAndFlush(book2ToEdit);
         assertThat(actualBook)
                 .isNotNull()
                 .usingRecursiveComparison()
@@ -182,14 +174,11 @@ public class BookRepositoryJpaTest {
     @Test
     void shouldDeleteBook() {
         BookId bookId = new BookId(2);
-        Book actualBook = bookRepository.get(bookId);
-        assertThat(actualBook)
-                .isNotNull();
-        BookId actualBookId = bookRepository.delete(bookId);
-        assertThat(actualBookId)
-                .isNotNull()
-                .isEqualTo(bookId);
-        assertThatThrownBy(() -> bookRepository.get(bookId))
-                .isInstanceOf(ObjectNotFoundException.class);
+        assertThat(bookRepository.findById(bookId))
+                .isNotEmpty();
+        bookRepository.deleteById(bookId);
+        bookRepository.flush();
+        assertThat(bookRepository.findById(bookId))
+                .isEmpty();
     }
 }

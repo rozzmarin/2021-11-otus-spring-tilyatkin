@@ -7,6 +7,8 @@ import ru.otus.spring.repository.AuthorRepository;
 import ru.otus.spring.domain.Author;
 import ru.otus.spring.domain.AuthorFilter;
 import ru.otus.spring.domain.AuthorId;
+import ru.otus.spring.repository.exception.ObjectNotFoundException;
+import ru.otus.spring.repository.specification.AuthorSpecification;
 
 import java.util.List;
 
@@ -19,35 +21,29 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     @Transactional(readOnly = true)
     public Author find(AuthorId id) {
-        return repository.get(id);
+        return repository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(String.format("Author with id %s is not found", id.getAuthorId())));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Author> find(AuthorFilter filter) {
-        return repository.get(filter);
+        return repository.findAll(AuthorSpecification.of(filter));
     }
 
     @Override
     public Author add(Author author) {
-        AuthorId authorId = repository.insert(author);
-        if (authorId != null) {
-            return repository.get(authorId);
-        }
-        return null;
+        return repository.save(author);
     }
 
     @Override
     public Author edit(Author author) {
-        AuthorId authorId = repository.update(author);
-        if (authorId != null) {
-            return repository.get(authorId);
-        }
-        return null;
+        return repository.save(author);
     }
 
     @Override
     public AuthorId remove(AuthorId id) {
-        return repository.delete(id);
+        repository.deleteById(id);
+        return id;
     }
 }

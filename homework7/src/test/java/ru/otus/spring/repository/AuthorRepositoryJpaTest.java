@@ -3,18 +3,17 @@ package ru.otus.spring.repository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
-import ru.otus.spring.repository.exception.ObjectNotFoundException;
 import ru.otus.spring.domain.Author;
 import ru.otus.spring.domain.AuthorFilter;
 import ru.otus.spring.domain.AuthorId;
+import ru.otus.spring.repository.specification.AuthorSpecification;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
 @DataJpaTest
-@Import(AuthorRepositoryJpa.class)
 public class AuthorRepositoryJpaTest {
     private static final Author author1 = Author.builder()
             .authorId(new AuthorId(1))
@@ -52,35 +51,35 @@ public class AuthorRepositoryJpaTest {
             .build();
 
     @Autowired
-    private AuthorRepositoryJpa authorRepository;
+    private AuthorRepository authorRepository;
 
     @Test
     void shouldReturnAllAuthorsCount() {
-        long expectedAuthorsCount = authorRepository.count(AuthorFilter.builder().build());
+        long expectedAuthorsCount = authorRepository.count(AuthorSpecification.of(AuthorFilter.builder().build()));
         assertThat(expectedAuthorsCount)
                 .isEqualTo(3);
     }
 
     @Test
     void shouldReturnFilteredAuthorsCount() {
-        long expectedAuthorsCount = authorRepository.count(AuthorFilter.builder()
+        long expectedAuthorsCount = authorRepository.count(AuthorSpecification.of(AuthorFilter.builder()
                 .name("Сергеевич")
-                .build());
+                .build()));
         assertThat(expectedAuthorsCount)
                 .isEqualTo(2);
     }
 
     @Test
     void shouldReturnAuthor() {
-        Author actualAuthor = authorRepository.get(new AuthorId(1));
+        Optional<Author> actualAuthor = authorRepository.findById(new AuthorId(1));
         assertThat(actualAuthor)
-                .usingRecursiveComparison()
-                .isEqualTo(author1);
+                .isNotEmpty()
+                .hasValue(author1);
     }
 
     @Test
     void shouldReturnAllAuthors() {
-        List<Author> actualAuthors = authorRepository.get(AuthorFilter.builder().build());
+        List<Author> actualAuthors = authorRepository.findAll(AuthorSpecification.of(AuthorFilter.builder().build()));
         assertThat(actualAuthors)
                 .usingRecursiveFieldByFieldElementComparator()
                 .containsExactlyInAnyOrderElementsOf(List.of(author1, author2, author3));
@@ -88,9 +87,9 @@ public class AuthorRepositoryJpaTest {
 
     @Test
     void shouldReturnFilteredAuthors() {
-        List<Author> actualAuthors = authorRepository.get(AuthorFilter.builder()
+        List<Author> actualAuthors = authorRepository.findAll(AuthorSpecification.of(AuthorFilter.builder()
                 .name("Александр")
-                .build());
+                .build()));
         assertThat(actualAuthors)
                 .usingRecursiveFieldByFieldElementComparator()
                 .containsExactlyInAnyOrderElementsOf(List.of(author1));
@@ -98,11 +97,7 @@ public class AuthorRepositoryJpaTest {
 
     @Test
     void shouldInsertAuthor() {
-        AuthorId actualAuthorId = authorRepository.insert(author4ToAdd);
-        assertThat(actualAuthorId)
-                .isNotNull()
-                .isEqualTo(author4AfterAdd.getAuthorId());
-        Author actualAuthor = authorRepository.get(actualAuthorId);
+        Author actualAuthor = authorRepository.saveAndFlush(author4ToAdd);
         assertThat(actualAuthor)
                 .isNotNull()
                 .usingRecursiveComparison()
@@ -111,11 +106,7 @@ public class AuthorRepositoryJpaTest {
 
     @Test
     void shouldUpdateAuthor() {
-        AuthorId actualAuthorId = authorRepository.update(author2ToEdit);
-        assertThat(actualAuthorId)
-                .isNotNull()
-                .isEqualTo(author2AfterEdit.getAuthorId());
-        Author actualAuthor = authorRepository.get(actualAuthorId);
+        Author actualAuthor = authorRepository.saveAndFlush(author2ToEdit);
         assertThat(actualAuthor)
                 .isNotNull()
                 .usingRecursiveComparison()
@@ -125,23 +116,22 @@ public class AuthorRepositoryJpaTest {
     @Test
     void shouldDeleteAuthorWithoutBooks() {
         AuthorId authorId = new AuthorId(3);
-        Author actualAuthor = authorRepository.get(authorId);
-        assertThat(actualAuthor)
-                .isNotNull();
-        AuthorId actualAuthorId = authorRepository.delete(authorId);
-        assertThat(actualAuthorId)
-                .isNotNull()
-                .isEqualTo(authorId);
-        assertThatThrownBy(() -> authorRepository.get(authorId))
-                .isInstanceOf(ObjectNotFoundException.class);
+        assertThat(authorRepository.findById(authorId))
+                .isNotEmpty();
+        authorRepository.deleteById(authorId);
+        authorRepository.flush();
+        assertThat(authorRepository.findById(authorId))
+                .isEmpty();
     }
 
     @Test
     void shouldNotDeleteAuthorWithBooks() {
         AuthorId authorId = new AuthorId(1);
-        Author actualAuthor = authorRepository.get(authorId);
-        assertThat(actualAuthor)
-                .isNotNull();
-        assertThatThrownBy(() -> authorRepository.delete(authorId));
+        assertThat(authorRepository.findById(authorId))
+                .isNotEmpty();
+        assertThatThrownBy(() -> {
+            authorRepository.deleteById(authorId);
+            authorRepository.flush();
+        });
     }
 }

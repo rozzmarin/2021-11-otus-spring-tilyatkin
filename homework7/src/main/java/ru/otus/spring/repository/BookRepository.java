@@ -1,21 +1,13 @@
 package ru.otus.spring.repository;
 
-import ru.otus.spring.domain.Book;
-import ru.otus.spring.domain.BookFilter;
-import ru.otus.spring.domain.BookId;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import ru.otus.spring.domain.*;
 
-import java.util.List;
+import java.util.Optional;
 
-public interface BookRepository {
-    long count(BookFilter filter);
-
-    Book get(BookId id);
-
-    List<Book> get(BookFilter filter);
-
-    BookId insert(Book book);
-
-    BookId update(Book book);
-
-    BookId delete(BookId id);
+public interface BookRepository extends JpaRepository<Book, BookId>, JpaSpecificationExecutor<Book> {
+    @EntityGraph("book-entity-graph-with-authors-and-genres")
+    Optional<Book> findById(BookId id);
 }

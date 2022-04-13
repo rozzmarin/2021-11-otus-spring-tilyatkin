@@ -6,10 +6,10 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.otus.spring.domain.*;
 import ru.otus.spring.repository.BookRepository;
 import ru.otus.spring.repository.BookReviewRepository;
+import ru.otus.spring.repository.exception.ObjectNotFoundException;
+import ru.otus.spring.repository.specification.BookReviewSpecification;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -22,44 +22,38 @@ public class BookReviewServiceImpl implements BookReviewService {
     @Override
     @Transactional(readOnly = true)
     public BookReview find(BookReviewId id) {
-        return bookReviewRepository.get(id);
+        return bookReviewRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(String.format("BookReview with id %s is not found", id.getBookReviewId())));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<BookReview> find(BookReviewFilter filter) {
-        return bookReviewRepository.get(filter);
+        return bookReviewRepository.findAll(BookReviewSpecification.of(filter));
     }
 
     @Override
     public BookReview add(BookReview bookReview) {
         validateBookReview(bookReview);
         prepareBook(bookReview);
-        BookReviewId bookReviewId = bookReviewRepository.insert(bookReview);
-        if (bookReviewId != null) {
-            return bookReviewRepository.get(bookReviewId);
-        }
-        return null;
+        return bookReviewRepository.save(bookReview);
     }
 
     @Override
     public BookReview edit(BookReview bookReview) {
         validateBookReview(bookReview);
         prepareBook(bookReview);
-        BookReviewId bookReviewId = bookReviewRepository.update(bookReview);
-        if (bookReviewId != null) {
-            return bookReviewRepository.get(bookReviewId);
-        }
-        return null;
+        return bookReviewRepository.save(bookReview);
     }
 
     @Override
     public BookReviewId remove(BookReviewId id) {
-        return bookReviewRepository.delete(id);
+        bookReviewRepository.deleteById(id);
+        return id;
     }
 
     private void prepareBook(BookReview bookReview) {
-        bookReview.setBook(bookRepository.get(bookReview.getBook().getBookId()));
+        bookReview.setBook(bookRepository.findById(bookReview.getBook().getBookId()).orElseThrow());
     }
 
     private void validateBookReview(BookReview bookReview) {

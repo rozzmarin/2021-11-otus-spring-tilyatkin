@@ -12,8 +12,10 @@ import ru.otus.spring.repository.AuthorRepository;
 import ru.otus.spring.domain.Author;
 import ru.otus.spring.domain.AuthorFilter;
 import ru.otus.spring.domain.AuthorId;
+import ru.otus.spring.repository.specification.AuthorSpecification;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -72,8 +74,8 @@ public class AuthorServiceImplTest {
     @Test
     void shouldReturnAuthor() {
         AuthorId authorId = new AuthorId(1);
-        given(authorRepository.get(authorId))
-                .willReturn(author1);
+        given(authorRepository.findById(authorId))
+                .willReturn(Optional.of(author1));
 
         Author actualAuthor = authorService.find(authorId);
         assertThat(actualAuthor)
@@ -84,7 +86,7 @@ public class AuthorServiceImplTest {
     @Test
     void shouldReturnAuthors() {
         AuthorFilter filter = AuthorFilter.builder().build();
-        given(authorRepository.get(filter))
+        given(authorRepository.findAll(AuthorSpecification.of(filter)))
                 .willReturn(List.of(author1, author2, author3));
 
         List<Author> actualAuthors = authorService.find(filter);
@@ -95,9 +97,7 @@ public class AuthorServiceImplTest {
 
     @Test
     void shouldInsertAuthor() {
-        given(authorRepository.insert(author4ToAdd))
-                .willReturn(new AuthorId(4));
-        given(authorRepository.get(new AuthorId(4)))
+        given(authorRepository.save(author4ToAdd))
                 .willReturn(author4AfterAdd);
 
         Author actualAuthor = authorService.add(author4ToAdd);
@@ -109,9 +109,7 @@ public class AuthorServiceImplTest {
 
     @Test
     void shouldUpdateAuthor() {
-        given(authorRepository.update(author2ToEdit))
-                .willReturn(new AuthorId(2));
-        given(authorRepository.get(new AuthorId(2)))
+        given(authorRepository.save(author2ToEdit))
                 .willReturn(author2AfterEdit);
 
         Author actualAuthor = authorService.edit(author2ToEdit);
@@ -124,8 +122,6 @@ public class AuthorServiceImplTest {
     @Test
     void shouldDeleteAuthor() {
         AuthorId authorId = new AuthorId(1);
-        given(authorRepository.delete(authorId))
-                .willReturn(authorId);
 
         AuthorId actualAuthorId = authorService.remove(authorId);
         assertThat(actualAuthorId)

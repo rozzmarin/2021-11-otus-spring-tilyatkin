@@ -12,8 +12,10 @@ import ru.otus.spring.repository.GenreRepository;
 import ru.otus.spring.domain.Genre;
 import ru.otus.spring.domain.GenreFilter;
 import ru.otus.spring.domain.GenreId;
+import ru.otus.spring.repository.specification.GenreSpecification;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -65,8 +67,8 @@ public class GenreServiceImplTest {
     @Test
     void shouldReturnGenre() {
         GenreId genreId = new GenreId(1);
-        given(genreRepository.get(genreId))
-                .willReturn(genre1);
+        given(genreRepository.findById(genreId))
+                .willReturn(Optional.of(genre1));
 
         Genre actualGenre = genreService.find(genreId);
         assertThat(actualGenre)
@@ -77,7 +79,7 @@ public class GenreServiceImplTest {
     @Test
     void shouldReturnGenres() {
         GenreFilter filter = GenreFilter.builder().build();
-        given(genreRepository.get(filter))
+        given(genreRepository.findAll(GenreSpecification.of(filter)))
                 .willReturn(List.of(genre1, genre2));
 
         List<Genre> actualGenres = genreService.find(filter);
@@ -88,9 +90,7 @@ public class GenreServiceImplTest {
 
     @Test
     void shouldInsertGenre() {
-        given(genreRepository.insert(genre4ToAdd))
-                .willReturn(new GenreId(3));
-        given(genreRepository.get(new GenreId(3)))
+        given(genreRepository.save(genre4ToAdd))
                 .willReturn(genre4AfterAdd);
 
         Genre actualGenre = genreService.add(genre4ToAdd);
@@ -102,9 +102,7 @@ public class GenreServiceImplTest {
 
     @Test
     void shouldUpdateGenre() {
-        given(genreRepository.update(genre1ToEdit))
-                .willReturn(new GenreId(1));
-        given(genreRepository.get(new GenreId(1)))
+        given(genreRepository.save(genre1ToEdit))
                 .willReturn(genre1AfterEdit);
 
         Genre actualGenre = genreService.edit(genre1ToEdit);
@@ -117,8 +115,6 @@ public class GenreServiceImplTest {
     @Test
     void shouldDeleteGenre() {
         GenreId genreId = new GenreId(1);
-        given(genreRepository.delete(genreId))
-                .willReturn(genreId);
 
         GenreId actualGenreId = genreService.remove(genreId);
         assertThat(actualGenreId)

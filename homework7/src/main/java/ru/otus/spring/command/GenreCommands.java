@@ -5,6 +5,7 @@ import org.springframework.shell.standard.ShellCommandGroup;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
+import ru.otus.spring.domain.AuthorId;
 import ru.otus.spring.domain.Genre;
 import ru.otus.spring.domain.GenreFilter;
 import ru.otus.spring.domain.GenreId;
@@ -12,6 +13,7 @@ import ru.otus.spring.service.GenreService;
 import ru.otus.spring.printer.Printer;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @ShellComponent
@@ -23,9 +25,11 @@ public class GenreCommands {
 
     @ShellMethod(value = "Get genres", key = {"genre-get"})
     public String getGenres(
+            @ShellOption(help = "Genre's id(s)", defaultValue = "") Set<GenreId> genreIds,
             @ShellOption(help = "Genre's title", defaultValue = "") String title
     ) {
         List<Genre> genres = genreService.find(GenreFilter.builder()
+                .genreIds(genreIds)
                 .title(title)
                 .build());
         return genres

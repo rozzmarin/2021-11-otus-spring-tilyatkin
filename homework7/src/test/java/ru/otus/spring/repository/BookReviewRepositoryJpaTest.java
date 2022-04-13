@@ -4,20 +4,14 @@ import org.assertj.core.api.recursive.comparison.RecursiveComparisonConfiguratio
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
-import ru.otus.spring.repository.exception.ObjectNotFoundException;
 import ru.otus.spring.domain.*;
+import ru.otus.spring.repository.specification.BookReviewSpecification;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
-@Import(BookReviewRepositoryJpa.class)
 public class BookReviewRepositoryJpaTest {
     private static final Author author2 = Author.builder()
             .authorId(new AuthorId(2))
@@ -78,34 +72,34 @@ public class BookReviewRepositoryJpaTest {
             .build();
 
     @Autowired
-    private BookReviewRepositoryJpa bookReviewRepository;
+    private BookReviewRepository bookReviewRepository;
 
     @Test
     void shouldReturnAllBookReviewsCount() {
-        long expectedBookReviewsCount = bookReviewRepository.count(BookReviewFilter.builder().build());
+        long expectedBookReviewsCount = bookReviewRepository.count(BookReviewSpecification.of(BookReviewFilter.builder().build()));
         assertThat(expectedBookReviewsCount)
                 .isEqualTo(2);
     }
 
     @Test
     void shouldReturnFilteredBookReviewsCount() {
-        long expectedBooksCount = bookReviewRepository.count(BookReviewFilter.builder()
+        long expectedBooksCount = bookReviewRepository.count(BookReviewSpecification.of(BookReviewFilter.builder()
                 .ratingLevel(Set.of(RatingLevel.LOW))
-                .build());
+                .build()));
         assertThat(expectedBooksCount)
                 .isEqualTo(1);
 
-        expectedBooksCount = bookReviewRepository.count(BookReviewFilter.builder()
+        expectedBooksCount = bookReviewRepository.count(BookReviewSpecification.of(BookReviewFilter.builder()
                 .reviewerName("Дантес")
                 .ratingLevel(Set.of(RatingLevel.LOW))
-                .build());
+                .build()));
         assertThat(expectedBooksCount)
                 .isEqualTo(1);
 
-        expectedBooksCount = bookReviewRepository.count(BookReviewFilter.builder()
+        expectedBooksCount = bookReviewRepository.count(BookReviewSpecification.of(BookReviewFilter.builder()
                 .bookIds(Set.of(new BookId(2)))
                 .ratingLevel(Set.of(RatingLevel.LOW))
-                .build());
+                .build()));
         assertThat(expectedBooksCount)
                 .isEqualTo(0);
     }
@@ -120,15 +114,17 @@ public class BookReviewRepositoryJpaTest {
 
     @Test
     void shouldReturnBookReview() {
-        BookReview actualBookReview = bookReviewRepository.get(new BookReviewId(1));
+        Optional<BookReview> actualBookReview = bookReviewRepository.findById(new BookReviewId(1));
         assertThat(actualBookReview)
+                .isNotEmpty()
+                .get()
                 .usingRecursiveComparison(comparisonConfiguration)
                 .isEqualTo(bookReview1);
     }
 
     @Test
     void shouldReturnAllBookReviews() {
-        List<BookReview> actualBookReviews = bookReviewRepository.get(BookReviewFilter.builder().build());
+        List<BookReview> actualBookReviews = bookReviewRepository.findAll(BookReviewSpecification.of(BookReviewFilter.builder().build()));
         assertThat(actualBookReviews)
                 .usingRecursiveFieldByFieldElementComparator(comparisonConfiguration)
                 .containsExactlyInAnyOrderElementsOf(List.of(bookReview1, bookReview2));
@@ -136,10 +132,10 @@ public class BookReviewRepositoryJpaTest {
 
     @Test
     void shouldReturnFilteredBookReviews() {
-        List<BookReview> actualBookReviews = bookReviewRepository.get(BookReviewFilter.builder()
+        List<BookReview> actualBookReviews = bookReviewRepository.findAll(BookReviewSpecification.of(BookReviewFilter.builder()
                 .reviewerName("Дантес")
                 .ratingLevel(Set.of(RatingLevel.LOW))
-                .build());
+                .build()));
         assertThat(actualBookReviews)
                 .usingRecursiveFieldByFieldElementComparator(comparisonConfiguration)
                 .containsExactlyInAnyOrderElementsOf(List.of(bookReview1));
@@ -147,11 +143,7 @@ public class BookReviewRepositoryJpaTest {
 
     @Test
     void shouldInsertBookReview() {
-        BookReviewId actualBookReviewId = bookReviewRepository.insert(bookReview3ToAdd);
-        assertThat(actualBookReviewId)
-                .isNotNull()
-                .isEqualTo(bookReview3AfterAdd.getBookReviewId());
-        BookReview actualBookReview = bookReviewRepository.get(actualBookReviewId);
+        BookReview actualBookReview = bookReviewRepository.saveAndFlush(bookReview3ToAdd);
         assertThat(actualBookReview)
                 .isNotNull()
                 .usingRecursiveComparison(comparisonConfiguration)
@@ -160,11 +152,7 @@ public class BookReviewRepositoryJpaTest {
 
     @Test
     void shouldUpdateBookReview() {
-        BookReviewId actualBookReviewId = bookReviewRepository.update(bookReview2ToEdit);
-        assertThat(actualBookReviewId)
-                .isNotNull()
-                .isEqualTo(bookReview2AfterEdit.getBookReviewId());
-        BookReview actualBookReview = bookReviewRepository.get(actualBookReviewId);
+        BookReview actualBookReview = bookReviewRepository.saveAndFlush(bookReview2ToEdit);
         assertThat(actualBookReview)
                 .isNotNull()
                 .usingRecursiveComparison(comparisonConfiguration)
@@ -174,14 +162,11 @@ public class BookReviewRepositoryJpaTest {
     @Test
     void shouldDeleteBookReview() {
         BookReviewId bookReviewId = new BookReviewId(2);
-        BookReview actualBookReview = bookReviewRepository.get(bookReviewId);
-        assertThat(actualBookReview)
-                .isNotNull();
-        BookReviewId actualBookReviewId = bookReviewRepository.delete(bookReviewId);
-        assertThat(actualBookReviewId)
-                .isNotNull()
-                .isEqualTo(bookReviewId);
-        assertThatThrownBy(() -> bookReviewRepository.get(bookReviewId))
-                .isInstanceOf(ObjectNotFoundException.class);
+        assertThat(bookReviewRepository.findById(bookReviewId))
+                .isNotEmpty();
+        bookReviewRepository.deleteById(bookReviewId);
+        bookReviewRepository.flush();
+        assertThat(bookReviewRepository.findById(bookReviewId))
+                .isEmpty();
     }
 }
