@@ -14,7 +14,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class AuthorServiceImpl implements AuthorService {
     private final AuthorRepository repository;
 
@@ -32,16 +31,19 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    @Transactional
     public Author add(Author author) {
         return repository.save(author);
     }
 
     @Override
+    @Transactional
     public Author edit(Author author) {
         return repository.save(author);
     }
 
     @Override
+    @Transactional
     public AuthorId remove(AuthorId id) {
         repository.deleteById(id);
         return id;

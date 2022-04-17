@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
@@ -49,6 +48,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
     public Book add(Book book) {
         prepareAuthors(book);
         prepareGenres(book);
@@ -56,6 +56,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
     public Book edit(Book book) {
         prepareAuthors(book);
         prepareGenres(book);
@@ -63,6 +64,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
     public BookId remove(BookId id) {
         bookRepository.deleteById(id);
         return id;

@@ -25,7 +25,7 @@ public class BookIdConverter {
         @Override
         public Set<BookId> convert(String source) {
             if (StringUtils.isNullOrEmpty(source))
-                return Set.of();
+                return null;
             return Arrays.stream(source.split(","))
                     .filter(s -> !s.isEmpty())
                     .map(s -> new BookId(Long.parseLong(s)))

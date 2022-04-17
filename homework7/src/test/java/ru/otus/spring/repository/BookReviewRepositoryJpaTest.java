@@ -41,14 +41,14 @@ public class BookReviewRepositoryJpaTest {
             .comment("Не осилил")
             .build();
     private static final BookReview bookReview2ToEdit = BookReview.builder()
-            .bookReviewId(new BookReviewId(1))
+            .bookReviewId(new BookReviewId(2))
             .book(new Book(new BookId(2)))
             .reviewerName("Вася Пупкин")
             .rating(9)
             .comment("Дочитал. Эпично")
             .build();
     private static final BookReview bookReview2AfterEdit = BookReview.builder()
-            .bookReviewId(new BookReviewId(1))
+            .bookReviewId(new BookReviewId(2))
             .book(new Book(new BookId(2)))
             .reviewerName("Вася Пупкин")
             .rating(9)
@@ -156,7 +156,7 @@ public class BookReviewRepositoryJpaTest {
         assertThat(actualBookReview)
                 .isNotNull()
                 .usingRecursiveComparison(comparisonConfiguration)
-                .isEqualTo(bookReview2ToEdit);
+                .isEqualTo(bookReview2AfterEdit);
     }
 
     @Test

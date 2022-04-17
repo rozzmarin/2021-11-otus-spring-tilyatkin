@@ -13,7 +13,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class BookReviewServiceImpl implements BookReviewService {
     private final BookReviewRepository bookReviewRepository;
     private final BookRepository bookRepository;
@@ -33,6 +32,7 @@ public class BookReviewServiceImpl implements BookReviewService {
     }
 
     @Override
+    @Transactional
     public BookReview add(BookReview bookReview) {
         validateBookReview(bookReview);
         prepareBook(bookReview);
@@ -40,6 +40,7 @@ public class BookReviewServiceImpl implements BookReviewService {
     }
 
     @Override
+    @Transactional
     public BookReview edit(BookReview bookReview) {
         validateBookReview(bookReview);
         prepareBook(bookReview);
@@ -47,6 +48,7 @@ public class BookReviewServiceImpl implements BookReviewService {
     }
 
     @Override
+    @Transactional
     public BookReviewId remove(BookReviewId id) {
         bookReviewRepository.deleteById(id);
         return id;

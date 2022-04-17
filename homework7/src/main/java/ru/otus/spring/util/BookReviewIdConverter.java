@@ -24,7 +24,7 @@ public class BookReviewIdConverter {
         @Override
         public Set<BookReviewId> convert(String source) {
             if (StringUtils.isNullOrEmpty(source))
-                return Set.of();
+                return null;
             return Arrays.stream(source.split(","))
                     .filter(s -> !s.isEmpty())
                     .map(s -> new BookReviewId(Long.parseLong(s)))

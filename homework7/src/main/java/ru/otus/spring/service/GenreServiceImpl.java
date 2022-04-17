@@ -14,7 +14,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class GenreServiceImpl implements GenreService {
     private final GenreRepository repository;
 
@@ -32,16 +31,19 @@ public class GenreServiceImpl implements GenreService {
     }
 
     @Override
+    @Transactional
     public Genre add(Genre genre) {
         return repository.save(genre);
     }
 
     @Override
+    @Transactional
     public Genre edit(Genre genre) {
         return repository.save(genre);
     }
 
     @Override
+    @Transactional
     public GenreId remove(GenreId id) {
         repository.deleteById(id);
         return id;

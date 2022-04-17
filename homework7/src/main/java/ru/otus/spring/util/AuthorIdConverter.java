@@ -24,7 +24,7 @@ public class AuthorIdConverter {
         @Override
         public Set<AuthorId> convert(String source) {
             if (StringUtils.isNullOrEmpty(source))
-                return Set.of();
+                return null;
             return Arrays.stream(source.split(","))
                     .filter(s -> !s.isEmpty())
                     .map(s -> new AuthorId(Long.parseLong(s)))
