@@ -1,0 +1,25 @@
+spring:
+  main:
+    allow-circular-references: true
+  data:
+    mongodb:
+      port: 53527
+      database: librarydb
+      options:
+        retryWrites: false
+  mongodb:
+    embedded:
+      version: 4.0.12
+
+mongock:
+  mongo-db:
+    write-concern:
+      journal: false
+  runner-type: "InitializingBean"
+  change-logs-scan-package: ru.otus.spring.mongock
+
+logging:
+  level:
+    org.springframework.boot.autoconfigure.mongo.embedded: off
+    org.springframework.data.mongodb.core.MongoTemplate: debug
+    #org.mongodb: trace
