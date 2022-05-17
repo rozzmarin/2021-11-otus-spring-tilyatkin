@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Редактировать жанр</title>
+    <link href="../../static/css/main.css" th:href="@{/css/main.css}" rel="stylesheet" />
+</head>
+    <body>
+        <div th:replace="fragments/menu.html :: menu"></div>
+
+        <form id="edit-form" action="edit.html" th:method="post" th:object="${genre}">
+            <h3>Жанр:</h3>
+            <div class="row">
+                <label for="genre-id-input">Код</label>
+                <input id="genre-id-input" name="genreId" type="text" disabled="disabled" value="1" th:value="*{{genreId}}"/>
+            </div>
+
+            <div class="row">
+                <label for="title-input">Наименование</label>
+                <input id="title-input" name="title" type="text" value="Роман" th:value="*{title}"/>
+            </div>
+
+            <div class="row">
+                <p class="errors" th:if="${#fields.hasErrors('all')}" th:errors="*{all}">Ошибка</p>
+            </div>
+
+            <div class="row">
+                <button type="submit" th:formaction="@{/genres/{id}(id=*{{genreId}})}">Сохранить</button>
+                <button type="submit" th:formaction="@{/genres/{id}/remove(id=*{{genreId}})}">Удалить</button>
+                <a href="list.html" th:href="@{/genres}">
+                    <button type="button">Отмена</button>
+                </a>
+            </div>
+        </form>
+    </body>
+</html>

@@ -153,6 +153,8 @@ public class BookReviewServiceImplTest {
 
     @Test
     void shouldUpdateBookReview() {
+        given(bookReviewRepository.findById(bookReview2ToEdit.getBookReviewId()))
+                .willReturn(Optional.of(bookReview2));
         given(bookRepository.findById(new BookId(2)))
                 .willReturn(Optional.of(book2));
         given(bookReviewRepository.save(bookReview2ToEditPrepared))
@@ -168,6 +170,8 @@ public class BookReviewServiceImplTest {
     @Test
     void shouldDeleteBookReview() {
         BookReviewId bookReviewId = new BookReviewId(1);
+        given(bookReviewRepository.findById(bookReviewId))
+                .willReturn(Optional.of(bookReview1));
 
         BookReviewId actualBookReviewId = bookReviewService.remove(bookReviewId);
         assertThat(actualBookReviewId)

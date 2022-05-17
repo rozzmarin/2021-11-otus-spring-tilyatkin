@@ -4,11 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.spring.domain.*;
+import ru.otus.spring.domain.exception.InvalidOperationException;
 import ru.otus.spring.repository.AuthorRepository;
 import ru.otus.spring.repository.BookRepository;
 import ru.otus.spring.repository.BookReviewRepository;
 import ru.otus.spring.repository.GenreRepository;
-import ru.otus.spring.repository.exception.ObjectNotFoundException;
+import ru.otus.spring.domain.exception.ObjectNotFoundException;
 import ru.otus.spring.repository.specification.BookSpecification;
 
 import java.util.*;
@@ -26,7 +27,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public Book find(BookId id) {
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException(String.format("Book with id %s is not found", id.getBookId())));
+                .orElseThrow(() -> new ObjectNotFoundException(String.format("Книга с кодом %s не найдена", id.getBookId())));
         Map<BookId, Long> reviewCounts = bookReviewRepository.countAtBooks(Set.of(id));
         book.setReviewsCount(reviewCounts.getOrDefault(id, 0L));
         return book;
@@ -50,6 +51,9 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public Book add(Book book) {
+        if (book.getBookId() != null) {
+            throw new InvalidOperationException("Недопустимый идентификатор");
+        }
         prepareAuthors(book);
         prepareGenres(book);
         return bookRepository.save(book);
@@ -58,6 +62,12 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public Book edit(Book book) {
+        if (book.getBookId() == null) {
+            throw new InvalidOperationException("Не задан идентификатор");
+        }
+        if (bookRepository.findById(book.getBookId()).isEmpty()) {
+            throw new ObjectNotFoundException(String.format("Книга с кодом %s не найдена", book.getBookId().getBookId()));
+        }
         prepareAuthors(book);
         prepareGenres(book);
         return bookRepository.save(book);
@@ -66,6 +76,9 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public BookId remove(BookId id) {
+        if (bookRepository.findById(id).isEmpty()) {
+            throw new ObjectNotFoundException(String.format("Книга с кодом %s не найдена", id.getBookId()));
+        }
         bookRepository.deleteById(id);
         return id;
     }

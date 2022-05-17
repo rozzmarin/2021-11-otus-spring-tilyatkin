@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Редактировать автора</title>
+    <link href="../../static/css/main.css" th:href="@{/css/main.css}" rel="stylesheet" />
+</head>
+    <body>
+        <div th:replace="fragments/menu.html :: menu"></div>
+
+        <form id="edit-form" action="edit.html" th:method="post" th:object="${author}">
+            <h3>Автор:</h3>
+            <div class="row">
+                <label for="author-id-input">Код</label>
+                <input id="author-id-input" name="authorId" type="text" disabled="disabled" value="1" th:value="*{{authorId}}"/>
+            </div>
+
+            <div class="row">
+                <label for="lastname-input">Фамилия</label>
+                <input id="lastname-input" name="lastname" type="text" value="Пушкин" th:value="*{lastname}"/>
+            </div>
+
+            <div class="row">
+                <label for="firstname-input">Имя</label>
+                <input id="firstname-input" name="firstname" type="text" value="Александр Сергеевич" th:value="*{firstname}"/>
+            </div>
+
+            <div class="row">
+                <p class="errors" th:if="${#fields.hasErrors('all')}" th:errors="*{all}">Ошибка</p>
+            </div>
+
+            <div class="row">
+                <button type="submit" th:formaction="@{/authors/{id}(id=*{{authorId}})}">Сохранить</button>
+                <button type="submit" th:formaction="@{/authors/{id}/remove(id=*{{authorId}})}">Удалить</button>
+                <a href="list.html" th:href="@{/authors}">
+                    <button type="button">Отмена</button>
+                </a>
+            </div>
+        </form>
+    </body>
+</html>

@@ -24,7 +24,7 @@ public class BookSpecification implements BaseSpecification<Book> {
             predicates.add(path.get("bookId").in(filter.getBookIds()));
         }
         if (filter.isTitleSpecified()) {
-            predicates.add(criteriaBuilder.like(path.get("title"), StringUtils.quoted(filter.getTitle(), '%')));
+            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(path.get("title")), StringUtils.quoted(filter.getTitle().toLowerCase(), '%')));
         }
         return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     }

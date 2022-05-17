@@ -26,7 +26,7 @@ public class BookReviewSpecification implements BaseSpecification<BookReview> {
             predicates.add(path.get("book").get("bookId").in(filter.getBookIds()));
         }
         if (filter.isReviewerNameSpecified()) {
-            predicates.add(criteriaBuilder.like(path.get("reviewerName"), StringUtils.quoted(filter.getReviewerName(), '%')));
+            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(path.get("reviewerName")), StringUtils.quoted(filter.getReviewerName().toLowerCase(), '%')));
         }
         if (filter.isRatingLevelSpecified()) {
             List<Integer> ratings = new ArrayList<>();

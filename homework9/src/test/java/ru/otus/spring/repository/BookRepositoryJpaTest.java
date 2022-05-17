@@ -3,7 +3,6 @@ package ru.otus.spring.repository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import ru.otus.spring.repository.exception.ObjectNotFoundException;
 import ru.otus.spring.domain.*;
 import ru.otus.spring.repository.specification.BookSpecification;
 
@@ -12,7 +11,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
 public class BookRepositoryJpaTest {

@@ -1,34 +1,26 @@
 package ru.otus.spring.util;
 
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 import ru.otus.spring.domain.BookReviewId;
 
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-public class BookReviewIdConverter {
-    @Component
-    static class BookReviewIdToStringConverter implements Converter<String, BookReviewId> {
-        @Override
-        public BookReviewId convert(String source) {
-            if (StringUtils.isNullOrEmpty(source))
-                return null;
-            return new BookReviewId(Long.parseLong(source));
-        }
+@Component
+public class BookReviewIdConverter extends BaseGenericConverter<BookReviewId>  {
+    public BookReviewIdConverter() {
+        super(BookReviewId.class);
     }
 
-    @Component
-    static class StringToBookReviewIdSetConverter implements Converter<String, Set<BookReviewId>> {
-        @Override
-        public Set<BookReviewId> convert(String source) {
-            if (StringUtils.isNullOrEmpty(source))
-                return null;
-            return Arrays.stream(source.split(","))
-                    .filter(s -> !s.isEmpty())
-                    .map(s -> new BookReviewId(Long.parseLong(s)))
-                    .collect(Collectors.toSet());
-        }
+    @Override
+    protected BookReviewId fromString(String source) {
+        Long bookReviewIdId = LongUtils.parseOrNull(source);
+        if (bookReviewIdId == null)
+            return null;
+        return new BookReviewId(bookReviewIdId);
+    }
+
+    @Override
+    protected String toString(BookReviewId source) {
+        if (source == null)
+            return null;
+        return Long.toString(source.getBookReviewId());
     }
 }

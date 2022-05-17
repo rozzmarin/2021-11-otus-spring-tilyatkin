@@ -23,10 +23,10 @@ public class AuthorSpecification implements BaseSpecification<Author> {
             predicates.add(path.get("authorId").in(filter.getAuthorIds()));
         }
         if (filter.isNameSpecified()) {
-            String pattern = StringUtils.quoted(filter.getName(), '%');
+            String pattern = StringUtils.quoted(filter.getName().toLowerCase(), '%');
             predicates.add(criteriaBuilder.or(
-                    criteriaBuilder.like(path.get("lastname"), pattern),
-                    criteriaBuilder.like(path.get("firstname"), pattern)));
+                    criteriaBuilder.like(criteriaBuilder.lower(path.get("lastname")), pattern),
+                    criteriaBuilder.like(criteriaBuilder.lower(path.get("firstname")), pattern)));
         }
         return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     }

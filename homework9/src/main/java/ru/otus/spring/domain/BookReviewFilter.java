@@ -1,16 +1,18 @@
 package ru.otus.spring.domain;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.util.Set;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Getter
+@Setter
 public class BookReviewFilter {
-    private final Set<BookId> bookIds;
-    private final String reviewerName;
-    private final Set<RatingLevel> ratingLevel;
+    private Set<BookId> bookIds;
+    private String reviewerName;
+    private Set<RatingLevel> ratingLevel;
 
     public boolean isBookIdsSpecified() {
         return bookIds != null && bookIds.size() > 0;

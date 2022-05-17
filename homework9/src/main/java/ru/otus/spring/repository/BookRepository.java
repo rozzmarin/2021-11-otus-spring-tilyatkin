@@ -10,4 +10,8 @@ import java.util.Optional;
 public interface BookRepository extends JpaRepository<Book, BookId>, JpaSpecificationExecutor<Book> {
     @EntityGraph("book-entity-graph-with-authors-and-genres")
     Optional<Book> findById(BookId id);
+
+    Boolean existsByAuthorsAuthorId(AuthorId id);
+
+    Boolean existsByGenresGenreId(GenreId id);
 }

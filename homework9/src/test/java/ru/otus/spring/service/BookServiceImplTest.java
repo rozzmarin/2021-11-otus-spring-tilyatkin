@@ -197,6 +197,8 @@ public class BookServiceImplTest {
 
     @Test
     void shouldUpdateBook() {
+        given(bookRepository.findById(book2ToEdit.getBookId()))
+                .willReturn(Optional.of(book2));
         given(authorRepository.save(author5ToAdd))
                 .willReturn(author5AfterAdd);
         given(authorRepository.findById(new AuthorId(2)))
@@ -216,6 +218,8 @@ public class BookServiceImplTest {
     @Test
     void shouldDeleteBook() {
         BookId bookId = new BookId(1);
+        given(bookRepository.findById(bookId))
+                .willReturn(Optional.of(book1));
 
         BookId actualBookId = bookService.remove(bookId);
         assertThat(actualBookId)

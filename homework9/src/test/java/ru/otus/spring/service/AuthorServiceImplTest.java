@@ -12,6 +12,7 @@ import ru.otus.spring.repository.AuthorRepository;
 import ru.otus.spring.domain.Author;
 import ru.otus.spring.domain.AuthorFilter;
 import ru.otus.spring.domain.AuthorId;
+import ru.otus.spring.repository.BookRepository;
 import ru.otus.spring.repository.specification.AuthorSpecification;
 
 import java.util.List;
@@ -60,14 +61,16 @@ public class AuthorServiceImplTest {
 
     @MockBean
     private AuthorRepository authorRepository;
+    @MockBean
+    private BookRepository bookRepository;
     @Autowired
     private AuthorServiceImpl authorService;
 
     @Configuration
     static class NestedConfiguration {
         @Bean
-        AuthorServiceImpl authorService(AuthorRepository authorRepository) {
-            return new AuthorServiceImpl(authorRepository);
+        AuthorServiceImpl authorService(AuthorRepository authorRepository, BookRepository bookRepository) {
+            return new AuthorServiceImpl(authorRepository, bookRepository);
         }
     }
 
@@ -109,6 +112,8 @@ public class AuthorServiceImplTest {
 
     @Test
     void shouldUpdateAuthor() {
+        given(authorRepository.findById(author2ToEdit.getAuthorId()))
+                .willReturn(Optional.of(author2));
         given(authorRepository.save(author2ToEdit))
                 .willReturn(author2AfterEdit);
 
@@ -122,6 +127,8 @@ public class AuthorServiceImplTest {
     @Test
     void shouldDeleteAuthor() {
         AuthorId authorId = new AuthorId(1);
+        given(authorRepository.findById(authorId))
+                .willReturn(Optional.of(author1));
 
         AuthorId actualAuthorId = authorService.remove(authorId);
         assertThat(actualAuthorId)

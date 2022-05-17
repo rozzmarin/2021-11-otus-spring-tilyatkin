@@ -23,7 +23,7 @@ public class GenreSpecification implements BaseSpecification<Genre> {
             predicates.add(path.get("genreId").in(filter.getGenreIds()));
         }
         if (filter.isTitleSpecified()) {
-            predicates.add(criteriaBuilder.like(path.get("title"), StringUtils.quoted(filter.getTitle(), '%')));
+            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(path.get("title")), StringUtils.quoted(filter.getTitle().toLowerCase(), '%')));
         }
         return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     }

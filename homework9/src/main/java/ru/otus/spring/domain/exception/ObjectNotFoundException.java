@@ -1,4 +1,4 @@
-package ru.otus.spring.repository.exception;
+package ru.otus.spring.domain.exception;
 
 public class ObjectNotFoundException extends RuntimeException {
     public ObjectNotFoundException(String message) {

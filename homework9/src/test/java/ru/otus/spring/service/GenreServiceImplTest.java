@@ -8,6 +8,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import ru.otus.spring.repository.BookRepository;
 import ru.otus.spring.repository.GenreRepository;
 import ru.otus.spring.domain.Genre;
 import ru.otus.spring.domain.GenreFilter;
@@ -53,14 +54,16 @@ public class GenreServiceImplTest {
 
     @MockBean
     private GenreRepository genreRepository;
+    @MockBean
+    private BookRepository bookRepository;
     @Autowired
     private GenreServiceImpl genreService;
 
     @Configuration
     static class NestedConfiguration {
         @Bean
-        GenreServiceImpl genreService(GenreRepository genreRepository) {
-            return new GenreServiceImpl(genreRepository);
+        GenreServiceImpl genreService(GenreRepository genreRepository, BookRepository bookRepository) {
+            return new GenreServiceImpl(genreRepository, bookRepository);
         }
     }
 
@@ -102,6 +105,8 @@ public class GenreServiceImplTest {
 
     @Test
     void shouldUpdateGenre() {
+        given(genreRepository.findById(genre1ToEdit.getGenreId()))
+                .willReturn(Optional.of(genre1));
         given(genreRepository.save(genre1ToEdit))
                 .willReturn(genre1AfterEdit);
 
@@ -115,6 +120,8 @@ public class GenreServiceImplTest {
     @Test
     void shouldDeleteGenre() {
         GenreId genreId = new GenreId(1);
+        given(genreRepository.findById(genreId))
+                .willReturn(Optional.of(genre1));
 
         GenreId actualGenreId = genreService.remove(genreId);
         assertThat(actualGenreId)
