@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Список жанров</title>
+    <link href="../../static/css/main.css" th:href="@{/css/main.css}" rel="stylesheet" />
+</head>
+<body>
+    <div th:replace="fragments/menu.html :: menu"></div>
+
+    <h3>Жанры</h3>
+
+    <div class="filter">
+        <form id="filter-form" action="list.html" th:method="get" th:action="@{/genres}" th:object="${genreFilter}">
+            <div class="row">
+                <label for="genre-id-input">Код(ы)</label>
+                <input id="genre-id-input" name="genreIds" type="text" value="1" th:value="*{{genreIds}}"/>
+            </div>
+
+            <div class="row">
+                <label for="title-input">Наименование</label>
+                <input id="title-input" name="title" type="text" value="Роман" th:value="*{title}"/>
+            </div>
+
+            <div class="row">
+                <button type="submit">Поиск</button>
+                <a href="add.html" th:href="@{/genres/add}">
+                    <button type="button">Создать</button>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Код</th>
+                    <th>Наименование</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="genre : ${genres}">
+                    <td>
+                        <a href="edit.html" th:href="@{/genres/{id}(id=${{genre.genreId}})}" th:text="${{genre.genreId}}">1</a>
+                    </td>
+                    <td>
+                        <a href="edit.html" th:href="@{/genres/{id}(id=${{genre.genreId}})}" th:text="${genre.title}">Роман</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
