@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Список авторов</title>
+    <link href="../../static/css/main.css" th:href="@{/css/main.css}" rel="stylesheet" />
+</head>
+<body>
+    <div th:replace="fragments/menu.html :: menu"></div>
+
+    <h3>Авторы</h3>
+
+    <div class="filter">
+        <form id="filter-form" action="list.html" th:method="get" th:action="@{/authors}" th:object="${authorFilter}">
+            <div class="row">
+                <label for="author-id-input">Код(ы)</label>
+                <input id="author-id-input" name="authorIds" type="text" value="1" th:value="*{{authorIds}}"/>
+            </div>
+
+            <div class="row">
+                <label for="name-input">Имя</label>
+                <input id="name-input" name="name" type="text" value="Пушкин" th:value="*{name}"/>
+            </div>
+
+            <div class="row">
+                <button type="submit">Поиск</button>
+                <a href="add.html" th:href="@{/authors/add}">
+                    <button type="button">Создать</button>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Код</th>
+                    <th>Фамилия</th>
+                    <th>Имя</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="author : ${authors}">
+                    <td>
+                        <a href="edit.html" th:href="@{/authors/{id}(id=${{author.authorId}})}" th:text="${{author.authorId}}">1</a>
+                    </td>
+                    <td>
+                        <a href="edit.html" th:href="@{/authors/{id}(id=${{author.authorId}})}" th:text="${author.lastname}">Пушкин</a>
+                    </td>
+                    <td>
+                        <a href="edit.html" th:href="@{/authors/{id}(id=${{author.authorId}})}" th:text="${author.firstname}">Александр Сергеевич</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
