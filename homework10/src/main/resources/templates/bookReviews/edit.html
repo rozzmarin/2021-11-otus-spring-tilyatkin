@@ -4,48 +4,153 @@
     <meta charset="UTF-8"/>
     <title>Редактировать отзыв</title>
     <link href="../../static/css/main.css" th:href="@{/css/main.css}" rel="stylesheet" />
+    <script src="/webjars/jquery/3.5.1/jquery.min.js"></script>
 </head>
     <body>
         <div th:replace="fragments/menu.html :: menu"></div>
 
-        <form id="edit-form" action="edit.html" th:method="post" th:object="${bookReview}">
+        <form id="edit-form" action="edit.html" method="post">
             <h3>Отзыв:</h3>
-            <div class="row">
+            <div id="book-review-id" class="row">
                 <label for="book-review-id-input">Код</label>
-                <input id="book-review-id-input" name="bookReviewId" type="text" disabled="disabled" value="1" th:value="*{{bookReviewId}}"/>
+                <input id="book-review-id-input" name="bookReviewId" type="text" disabled="disabled"/>
             </div>
 
             <div class="row">
-                <label for="book-title-input">Книга</label>
-                <label id="book-title-input" th:text="*{bookTitle}">А.С. Пушкин. Евгений Онегин</label>
+                <label for="book-title-href">Книга</label>
+                <a id="book-title-href" href="../books/edit.html" th:href="@{/books/{bookId}(bookId=${{bookId}})}"></a>
             </div>
 
             <div class="row">
                 <label for="reviewer-name-input">Автор отзыва</label>
-                <input id="reviewer-name-input" name="reviewerName" type="text" value="Дантес" th:value="*{reviewerName}"/>
+                <input id="reviewer-name-input" name="reviewerName" type="text"/>
             </div>
 
             <div class="row">
                 <label for="rating-input">Оценка</label>
-                <input id="rating-input" name="rating" type="number" min="1" max="10" value="2" th:value="*{rating}"/>
+                <input id="rating-input" name="rating" type="number" min="1" max="10"/>
             </div>
 
             <div class="row">
                 <label for="comment-input">Комментарий</label>
-                <input id="comment-input" name="comment" type="text" th:value="*{comment}"/>
+                <input id="comment-input" name="comment" type="text"/>
             </div>
 
             <div class="row">
-                <p class="errors" th:if="${#fields.hasErrors('all')}" th:errors="*{all}">Ошибка</p>
+                <p id="errors" class="errors"></p>
             </div>
 
             <div class="row">
-                <button type="submit" th:formaction="@{/books/{bookId}/reviews/{reviewId}(bookId=*{{bookId}},reviewId=*{{bookReviewId}})}">Сохранить</button>
-                <button type="submit" th:formaction="@{/books/{bookId}/reviews/{reviewId}/remove(bookId=*{{bookId}},reviewId=*{{bookReviewId}})}">Удалить</button>
-                <a href="list.html" th:href="@{/books/{id}/reviews(id=*{{bookId}})}">
+                <button id="save-button" type="submit">Сохранить</button>
+                <button id="remove-button">Удалить</button>
+                <a href="list.html" th:href="@{/books/{bookId}/reviews(bookId=${{bookId}})}">
                     <button type="button">Отмена</button>
                 </a>
             </div>
         </form>
+
+        <script>
+            function getBook(bookId) {
+                $.ajax({
+                    url: `/api/books/${bookId.bookId}`
+                }).done(function(book) {
+                    $('#book-title-href').text(book.fullTitle);
+                })
+            }
+
+            function getReview(bookId, bookReviewId) {
+                $.ajax({
+                    url: `/api/books/${bookId.bookId}/reviews/${bookReviewId.bookReviewId}`
+                }).done(function(bookReview) {
+                    $('#book-review-id-input').val(bookReview.bookReviewId.bookReviewId);
+                    $('#reviewer-name-input').val(bookReview.reviewerName);
+                    $('#rating-input').val(bookReview.rating);
+                    $('#comment-input').val(bookReview.comment);
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function addReview(bookId) {
+                $.ajax({
+                    url: `/api/books/${bookId.bookId}/reviews`,
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(getFormData())
+                }).done(function(bookReview) {
+                    window.location.href = `/books/${bookId.bookId}/reviews`
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function editReview(bookId, bookReviewId) {
+                $.ajax({
+                    url: `/api/books/${bookId.bookId}/reviews/${bookReviewId.bookReviewId}`,
+                    method: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(getFormData())
+                }).done(function(bookReview) {
+                    window.location.href = `/books/${bookId.bookId}/reviews`
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function removeReview(bookId, bookReviewId) {
+                $.ajax({
+                    url: `/api/books/${bookId.bookId}/reviews/${bookReviewId.bookReviewId}`,
+                    method: 'DELETE'
+                }).done(function(bookReview) {
+                    window.location.href = `/books/${bookId.bookId}/reviews`
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function getFormData() {
+                var data = $('#edit-form').serializeArray().reduce(function(data,item) { data[item.name] = item.value; return data; }, {});
+                return data;
+            }
+
+            function displayErrors(error) {
+                $('#errors').empty();
+                error.errors.forEach(function(error) {
+                    $('#errors').append(`
+                        <br>
+                        ${error}
+                    `)
+                });
+            }
+
+            $(function() {
+                var bookId = {
+                    bookId: '[[${bookId?.bookId}]]'
+                };
+                var bookReviewId = {
+                    bookReviewId: '[[${bookReviewId?.bookReviewId}]]'
+                };
+                getBook(bookId);
+                if (bookReviewId.bookReviewId == '') {
+                    $('#book-review-id').hide();
+                    $('#remove-button').hide();
+                    $('#edit-form').on('submit', function(e) {
+                        e.preventDefault();
+                        addReview(bookId);
+                    });
+                }
+                else {
+                    $('#edit-form').on('submit', function(e) {
+                        e.preventDefault();
+                        editReview(bookId, bookReviewId);
+                    });
+                    $('#remove-button').on('click', function(e) {
+                        e.preventDefault();
+                        removeReview(bookId, bookReviewId);
+                    });
+                    getReview(bookId, bookReviewId);
+                }
+            });
+        </script>        
     </body>
 </html>

@@ -1,107 +1,44 @@
 package ru.otus.spring.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import ru.otus.spring.domain.*;
+import org.springframework.web.bind.annotation.*;
+import ru.otus.spring.domain.Book;
+import ru.otus.spring.domain.BookFilter;
+import ru.otus.spring.domain.BookId;
 import ru.otus.spring.dto.BookDto;
-import ru.otus.spring.service.AuthorService;
 import ru.otus.spring.service.BookService;
-import ru.otus.spring.service.GenreService;
 
 import javax.validation.Valid;
 import java.util.List;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class BookController {
     private final BookService bookService;
-    private final AuthorService authorService;
-    private final GenreService genreService;
 
-    @GetMapping(path = { "/books", "/" })
-    public String readBooks(
-            @ModelAttribute BookFilter bookFilter,
-            Model model
-    ) {
-        List<Book> books = bookService.find(bookFilter);
-        model.addAttribute("bookFilter", bookFilter);
-        model.addAttribute("books", books);
-        return "books/list";
+    @GetMapping("/api/books")
+    public List<Book> readBooks(BookFilter bookFilter) {
+        return bookService.find(bookFilter);
     }
 
-    @GetMapping("/books/add")
-    public String addBook(
-            Model model
-    ) {
-        List<Author> authors = authorService.find(AuthorFilter.builder().build());
-        List<Genre> genres = genreService.find(GenreFilter.builder().build());
-        model.addAttribute("book", new BookDto());
-        model.addAttribute("authors", authors);
-        model.addAttribute("genres", genres);
-        return "books/add";
+    @GetMapping("/api/books/{id}")
+    public BookDto readBook(@PathVariable("id") BookId id) {
+        return BookDto.fromDomain(bookService.find(id));
     }
 
-    @PostMapping("/books/add")
-    public String addBook(
-            @ModelAttribute("book") @Valid BookDto book,
-            BindingResult result,
-            Model model
-    ) {
-        if (result.hasErrors()) {
-            List<Author> authors = authorService.find(AuthorFilter.builder().build());
-            List<Genre> genres = genreService.find(GenreFilter.builder().build());
-            model.addAttribute("authors", authors);
-            model.addAttribute("genres", genres);
-            return "books/add";
-        }
-        bookService.add(book.toDomain());
-        return "redirect:/books";
+    @PostMapping("/api/books")
+    public BookDto addBook(@RequestBody @Valid BookDto book) {
+        return BookDto.fromDomain(bookService.add(book.toDomain()));
     }
 
-    @GetMapping("/books/{id}")
-    public String editBook(
-            @PathVariable("id") BookId id,
-            Model model
-    ) {
-        BookDto book = BookDto.fromDomain(bookService.find(id));
-        List<Author> authors = authorService.find(AuthorFilter.builder().build());
-        List<Genre> genres = genreService.find(GenreFilter.builder().build());
-        model.addAttribute("book", book);
-        model.addAttribute("authors", authors);
-        model.addAttribute("genres", genres);
-        return "books/edit";
-    }
-
-    @PostMapping("/books/{id}")
-    public String editBook(
-            @PathVariable("id") BookId id,
-            @ModelAttribute("book") @Valid BookDto book,
-            BindingResult result,
-            Model model
-    ) {
+    @PutMapping("/api/books/{id}")
+    public BookDto editBook(@PathVariable("id") BookId id, @RequestBody @Valid BookDto book) {
         book.setBookId(id);
-        if (result.hasErrors()) {
-            List<Author> authors = authorService.find(AuthorFilter.builder().build());
-            List<Genre> genres = genreService.find(GenreFilter.builder().build());
-            model.addAttribute("authors", authors);
-            model.addAttribute("genres", genres);
-            return "books/edit";
-        }
-        bookService.edit(book.toDomain());
-        return "redirect:/books";
+        return BookDto.fromDomain(bookService.edit(book.toDomain()));
     }
 
-    @PostMapping("/books/{id}/remove")
-    public String removeBook(
-            @PathVariable("id") BookId id
-    ) {
-        bookService.remove(id);
-        return "redirect:/books";
+    @DeleteMapping("/api/books/{id}")
+    public BookId removeBook(@PathVariable("id") BookId id) {
+        return bookService.remove(id);
     }
 }

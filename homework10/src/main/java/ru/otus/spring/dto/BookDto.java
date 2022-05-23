@@ -22,6 +22,8 @@ public class BookDto {
     @Size(min = 1, max = 255, message = "Наименование должно быть длиной от 1 до 255 символов")
     private String title;
 
+    private String fullTitle;
+
     @NotEmpty(message = "Необходимо указать автора(ов)")
     private Set<AuthorId> authorIds;
 
@@ -45,6 +47,7 @@ public class BookDto {
         return new BookDto(
                 book.getBookId(),
                 book.getTitle(),
+                titleFromDomain(book),
                 book.getAuthors().stream().map(Author::getAuthorId).collect(Collectors.toSet()),
                 book.getGenres().stream().map(Genre::getGenreId).collect(Collectors.toSet()));
     }

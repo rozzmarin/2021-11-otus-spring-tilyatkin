@@ -4,33 +4,124 @@
     <meta charset="UTF-8"/>
     <title>Редактировать жанр</title>
     <link href="../../static/css/main.css" th:href="@{/css/main.css}" rel="stylesheet" />
+    <script src="/webjars/jquery/3.5.1/jquery.min.js"></script>
 </head>
     <body>
         <div th:replace="fragments/menu.html :: menu"></div>
 
-        <form id="edit-form" action="edit.html" th:method="post" th:object="${genre}">
+        <form id="edit-form" action="edit.html" method="post">
             <h3>Жанр:</h3>
-            <div class="row">
+            <div id="genre-id" class="row">
                 <label for="genre-id-input">Код</label>
-                <input id="genre-id-input" name="genreId" type="text" disabled="disabled" value="1" th:value="*{{genreId}}"/>
+                <input id="genre-id-input" name="genreId" type="text" disabled="disabled"/>
             </div>
 
             <div class="row">
                 <label for="title-input">Наименование</label>
-                <input id="title-input" name="title" type="text" value="Роман" th:value="*{title}"/>
+                <input id="title-input" name="title" type="text"/>
             </div>
 
             <div class="row">
-                <p class="errors" th:if="${#fields.hasErrors('all')}" th:errors="*{all}">Ошибка</p>
+                <p id="errors" class="errors"></p>
             </div>
 
             <div class="row">
-                <button type="submit" th:formaction="@{/genres/{id}(id=*{{genreId}})}">Сохранить</button>
-                <button type="submit" th:formaction="@{/genres/{id}/remove(id=*{{genreId}})}">Удалить</button>
+                <button id="save-button" type="submit">Сохранить</button>
+                <button id="remove-button">Удалить</button>
                 <a href="list.html" th:href="@{/genres}">
                     <button type="button">Отмена</button>
                 </a>
             </div>
         </form>
+
+        <script>
+            function getGenre(genreId) {
+                $.ajax({
+                    url: `/api/genres/${genreId.genreId}`
+                }).done(function(genre) {
+                    $('#genre-id-input').val(genre.genreId.genreId);
+                    $('#title-input').val(genre.title);
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function addGenre() {
+                $.ajax({
+                    url: '/api/genres/',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(getFormData())
+                }).done(function(genre) {
+                    window.location.href = '/genres'
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function editGenre(genreId) {
+                $.ajax({
+                    url: `/api/genres/${genreId.genreId}`,
+                    method: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(getFormData())
+                }).done(function(genre) {
+                    window.location.href = '/genres'
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function removeGenre(genreId) {
+                $.ajax({
+                    url: `/api/genres/${genreId.genreId}`,
+                    method: 'DELETE'
+                }).done(function(genre) {
+                    window.location.href = '/genres'
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function getFormData() {
+                var data = $('#edit-form').serializeArray().reduce(function(data,item) { data[item.name] = item.value; return data; }, {});
+                return data;
+            }
+
+            function displayErrors(error) {
+                $('#errors').empty();
+                error.errors.forEach(function(error) {
+                    $('#errors').append(`
+                        <br>
+                        ${error}
+                    `)
+                });
+            }
+
+            $(function() {
+                var genreId = {
+                    genreId: '[[${genreId?.genreId}]]'
+                };
+                if (genreId.genreId == '') {
+                    $('#genre-id').hide();
+                    $('#remove-button').hide();
+                    $('#edit-form').on('submit', function(e) {
+                        e.preventDefault();
+                        addGenre();
+                    });
+                }
+                else {
+                    $('#edit-form').on('submit', function(e) {
+                        e.preventDefault();
+                        editGenre(genreId);
+                    });
+                    $('#remove-button').on('click', function(e) {
+                        e.preventDefault();
+                        removeGenre(genreId);
+                    });
+                    getGenre(genreId);
+                }
+            });
+        </script>        
     </body>
 </html>

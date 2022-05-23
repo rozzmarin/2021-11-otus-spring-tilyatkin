@@ -16,7 +16,6 @@ import javax.validation.constraints.*;
 public class BookReviewDto {
     private BookReviewId bookReviewId;
 
-    @NotNull(message = "Необходимо указать книгу")
     private BookId bookId;
 
     private String bookTitle;
@@ -51,5 +50,15 @@ public class BookReviewDto {
                 bookReview.getReviewerName(),
                 bookReview.getRating(),
                 bookReview.getComment());
+    }
+
+    public static BookReviewDto fromDomainForList(BookReview bookReview) {
+        return new BookReviewDto(
+                bookReview.getBookReviewId(),
+                bookReview.getBook().getBookId(),
+                BookDto.titleFromDomain(bookReview.getBook()),
+                bookReview.getReviewerName(),
+                bookReview.getRating(),
+                null);
     }
 }

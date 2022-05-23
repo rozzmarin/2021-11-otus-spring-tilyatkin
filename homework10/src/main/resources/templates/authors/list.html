@@ -4,6 +4,7 @@
     <meta charset="UTF-8"/>
     <title>Список авторов</title>
     <link href="../../static/css/main.css" th:href="@{/css/main.css}" rel="stylesheet" />
+    <script src="/webjars/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
     <div th:replace="fragments/menu.html :: menu"></div>
@@ -11,15 +12,15 @@
     <h3>Авторы</h3>
 
     <div class="filter">
-        <form id="filter-form" action="list.html" th:method="get" th:action="@{/authors}" th:object="${authorFilter}">
+        <form id="filter-form" action="list.html" method="get">
             <div class="row">
                 <label for="author-id-input">Код(ы)</label>
-                <input id="author-id-input" name="authorIds" type="text" value="1" th:value="*{{authorIds}}"/>
+                <input id="author-id-input" name="authorIds" type="text"/>
             </div>
 
             <div class="row">
                 <label for="name-input">Имя</label>
-                <input id="name-input" name="name" type="text" value="Пушкин" th:value="*{name}"/>
+                <input id="name-input" name="name" type="text"/>
             </div>
 
             <div class="row">
@@ -41,19 +42,43 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="author : ${authors}">
-                    <td>
-                        <a href="edit.html" th:href="@{/authors/{id}(id=${{author.authorId}})}" th:text="${{author.authorId}}">1</a>
-                    </td>
-                    <td>
-                        <a href="edit.html" th:href="@{/authors/{id}(id=${{author.authorId}})}" th:text="${author.lastname}">Пушкин</a>
-                    </td>
-                    <td>
-                        <a href="edit.html" th:href="@{/authors/{id}(id=${{author.authorId}})}" th:text="${author.firstname}">Александр Сергеевич</a>
-                    </td>
-                </tr>
             </tbody>
         </table>
     </div>
+
+    <script>
+        function getAuthors() {
+            $.ajax({
+                url: '/api/authors',
+                data: $('#filter-form').serialize()
+            }).done(function(authors) {
+                $('tbody').empty();
+                authors.forEach(function(author) {
+                    $('tbody').append(`
+                        <tr>
+                            <td>
+                                <a href="/authors/${author.authorId.authorId}">${author.authorId.authorId}</a>
+                            </td>
+                            <td>
+                                <a href="/authors/${author.authorId.authorId}">${author.lastname}</a>
+                            </td>
+                            <td>
+                                <a href="/authors/${author.authorId.authorId}">${author.firstname}</a>
+                            </td>
+                        </tr>
+                    `);
+                });
+            })
+        }
+
+        $('#filter-form').on('submit', function(e) {
+            e.preventDefault();
+            getAuthors();
+        });
+
+        $(function() {
+            getAuthors();
+        });
+    </script>
 </body>
 </html>
