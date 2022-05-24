@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Редактировать книгу</title>
+    <link href="../../static/css/main.css" th:href="@{/css/main.css}" rel="stylesheet" />
+    <script src="/webjars/jquery/3.5.1/jquery.min.js"></script>
+</head>
+    <body>
+        <div th:replace="fragments/menu.html :: menu"></div>
+
+        <form id="edit-form" action="edit.html" method="post">
+            <h3>Книга:</h3>
+            <div id="book-id" class="row">
+                <label for="book-id-input">Код</label>
+                <input id="book-id-input" name="bookId" type="text" disabled="disabled"/>
+            </div>
+
+            <div class="row">
+                <label for="title-input">Наименование</label>
+                <input id="title-input" name="title" type="text"/>
+            </div>
+
+            <div class="row">
+                <label for="authors-input">Автор(ы)</label>
+                <select id="authors-input" name="authorIds" multiple>
+                </select>
+            </div>
+
+            <div class="row">
+                <label for="genres-input">Жанр(ы)</label>
+                <select id="genres-input" name="genreIds" multiple>
+                </select>
+            </div>
+
+            <div class="row">
+                <p id="errors" class="errors"></p>
+            </div>
+
+            <div class="row">
+                <button id="save-button" type="submit">Сохранить</button>
+                <button id="remove-button">Удалить</button>
+                <a href="list.html" th:href="@{/books}">
+                    <button type="button">Отмена</button>
+                </a>
+            </div>
+        </form>
+
+        <script>
+            function getAuthors() {
+                return $.ajax({
+                    url: '/api/authors'
+                }).done(function(authors) {
+                    $('#authors-input').empty();
+                    authors.forEach(function(author) {
+                        $('#authors-input').append(`
+                            <option value="${author.authorId.authorId}">${author.lastname + ' ' + author.firstname}</option>
+                        `);
+                    });
+                })
+            }
+
+            function getGenres() {
+                return $.ajax({
+                    url: '/api/genres'
+                }).done(function(genres) {
+                    $('#genres-input').empty();
+                    genres.forEach(function(genre) {
+                        $('#genres-input').append(`
+                            <option value="${genre.genreId.genreId}">${genre.title}</option>
+                        `);
+                    });
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function getBook(bookId) {
+                $.ajax({
+                    url: `/api/books/${bookId.bookId}`
+                }).done(function(book) {
+                    $('#book-id-input').val(book.bookId.bookId);
+                    $('#title-input').val(book.title);
+                    $('#authors-input').val(book.authorIds.map(id => id.authorId));
+                    $('#genres-input').val(book.genreIds.map(id => id.genreId));
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function addBook() {
+                $.ajax({
+                    url: '/api/books/',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(getFormData())
+                }).done(function(book) {
+                    window.location.href = '/books'
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function editBook(bookId) {
+                $.ajax({
+                    url: `/api/books/${bookId.bookId}`,
+                    method: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(getFormData())
+                }).done(function(book) {
+                    window.location.href = '/books'
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function removeBook(bookId) {
+                $.ajax({
+                    url: `/api/books/${bookId.bookId}`,
+                    method: 'DELETE'
+                }).done(function(book) {
+                    window.location.href = '/books'
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function getFormData() {
+                var data = {
+                    title: $('#title-input').val(),
+                    authorIds: $('#authors-input').val(),
+                    genreIds: $('#genres-input').val()
+                };
+                return data;
+            }
+
+            function displayErrors(error) {
+                $('#errors').empty();
+                error.errors.forEach(function(error) {
+                    $('#errors').append(`
+                        <br>
+                        ${error}
+                    `)
+                });
+            }
+
+            $(function() {
+                var bookId = {
+                    bookId: '[[${bookId?.bookId}]]'
+                };
+                var getCollections = $.when(getAuthors(), getGenres());
+                if (bookId.bookId == '') {
+                    $('#book-id').hide();
+                    $('#remove-button').hide();
+                    $('#edit-form').on('submit', function(e) {
+                        e.preventDefault();
+                        addBook();
+                    });
+                }
+                else {
+                    $('#edit-form').on('submit', function(e) {
+                        e.preventDefault();
+                        editBook(bookId);
+                    });
+                    $('#remove-button').on('click', function(e) {
+                        e.preventDefault();
+                        removeBook(bookId);
+                    });
+                    getCollections.then(function() {
+                        getBook(bookId);
+                    });
+                }
+            });
+        </script>
+    </body>
+</html>

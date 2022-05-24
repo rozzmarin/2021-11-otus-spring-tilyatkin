@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Редактировать автора</title>
+    <link href="../../static/css/main.css" th:href="@{/css/main.css}" rel="stylesheet" />
+    <script src="/webjars/jquery/3.5.1/jquery.min.js"></script>
+</head>
+    <body>
+        <div th:replace="fragments/menu.html :: menu"></div>
+
+        <form id="edit-form" action="edit.html" method="post">
+            <h3>Автор:</h3>
+            <div id="author-id" class="row">
+                <label for="author-id-input">Код</label>
+                <input id="author-id-input" name="authorId" type="text" disabled="disabled" />
+            </div>
+
+            <div class="row">
+                <label for="lastname-input">Фамилия</label>
+                <input id="lastname-input" name="lastname" type="text"/>
+            </div>
+
+            <div class="row">
+                <label for="firstname-input">Имя</label>
+                <input id="firstname-input" name="firstname" type="text"/>
+            </div>
+
+            <div class="row">
+                <p id="errors" class="errors"></p>
+            </div>
+
+            <div class="row">
+                <button id="save-button" type="submit">Сохранить</button>
+                <button id="remove-button">Удалить</button>
+                <a href="list.html" th:href="@{/authors}">
+                    <button type="button">Отмена</button>
+                </a>
+            </div>
+        </form>
+
+        <script>
+            function getAuthor(authorId) {
+                $.ajax({
+                    url: `/api/authors/${authorId.authorId}`
+                }).done(function(author) {
+                    $('#author-id-input').val(author.authorId.authorId);
+                    $('#lastname-input').val(author.lastname);
+                    $('#firstname-input').val(author.firstname);
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function addAuthor() {
+                $.ajax({
+                    url: '/api/authors/',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(getFormData())
+                }).done(function(author) {
+                    window.location.href = '/authors'
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function editAuthor(authorId) {
+                $.ajax({
+                    url: `/api/authors/${authorId.authorId}`,
+                    method: 'PUT',
+                    contentType: 'application/json',
+                    data: JSON.stringify(getFormData())
+                }).done(function(author) {
+                    window.location.href = '/authors'
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function removeAuthor(authorId) {
+                $.ajax({
+                    url: `/api/authors/${authorId.authorId}`,
+                    method: 'DELETE'
+                }).done(function(author) {
+                    window.location.href = '/authors'
+                }).fail(function(jqXHR) {
+                    displayErrors(jqXHR.responseJSON);
+                })
+            }
+
+            function getFormData() {
+                var data = $('#edit-form').serializeArray().reduce(function(data,item) { data[item.name] = item.value; return data; }, {});
+                return data;
+            }
+
+            function displayErrors(error) {
+                $('#errors').empty();
+                error.errors.forEach(function(error) {
+                    $('#errors').append(`
+                        <br>
+                        ${error}
+                    `)
+                });
+            }
+
+            $(function() {
+                var authorId = {
+                    authorId: '[[${authorId?.authorId}]]'
+                };
+                if (authorId.authorId == '') {
+                    $('#author-id').hide();
+                    $('#remove-button').hide();
+                    $('#edit-form').on('submit', function(e) {
+                        e.preventDefault();
+                        addAuthor();
+                    });
+                }
+                else {
+                    $('#edit-form').on('submit', function(e) {
+                        e.preventDefault();
+                        editAuthor(authorId);
+                    });
+                    $('#remove-button').on('click', function(e) {
+                        e.preventDefault();
+                        removeAuthor(authorId);
+                    });
+                    getAuthor(authorId);
+                }
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Список жанров</title>
+    <link href="../../static/css/main.css" th:href="@{/css/main.css}" rel="stylesheet" />
+    <script src="/webjars/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <div th:replace="fragments/menu.html :: menu"></div>
+
+    <h3>Жанры</h3>
+
+    <div class="filter">
+        <form id="filter-form" action="list.html" method="get">
+            <div class="row">
+                <label for="genre-id-input">Код(ы)</label>
+                <input id="genre-id-input" name="genreIds" type="text"/>
+            </div>
+
+            <div class="row">
+                <label for="title-input">Наименование</label>
+                <input id="title-input" name="title" type="text"/>
+            </div>
+
+            <div class="row">
+                <button type="submit">Поиск</button>
+                <a href="add.html" th:href="@{/genres/add}">
+                    <button type="button">Создать</button>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Код</th>
+                    <th>Наименование</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function getGenres() {
+            $.ajax({
+                url: '/api/genres',
+                data: $('#filter-form').serialize()
+            }).done(function(genres) {
+                $('tbody').empty();
+                genres.forEach(function(genre) {
+                    $('tbody').append(`
+                        <tr>
+                            <td>
+                                <a href="/genres/${genre.genreId.genreId}">${genre.genreId.genreId}</a>
+                            </td>
+                            <td>
+                                <a href="/genres/${genre.genreId.genreId}">${genre.title}</a>
+                            </td>
+                        </tr>
+                    `);
+                });
+            })
+        }
+
+        $('#filter-form').on('submit', function(e) {
+            e.preventDefault();
+            getGenres();
+        });
+
+        $(function() {
+            getGenres();
+        });
+    </script>
+</body>
+</html>
