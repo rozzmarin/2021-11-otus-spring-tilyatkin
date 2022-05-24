@@ -48,7 +48,7 @@
 
         <script>
             function getAuthors() {
-                $.ajax({
+                return $.ajax({
                     url: '/api/authors'
                 }).done(function(authors) {
                     $('#authors-input').empty();
@@ -61,7 +61,7 @@
             }
 
             function getGenres() {
-                $.ajax({
+                return $.ajax({
                     url: '/api/genres'
                 }).done(function(genres) {
                     $('#genres-input').empty();
@@ -148,8 +148,7 @@
                 var bookId = {
                     bookId: '[[${bookId?.bookId}]]'
                 };
-                getAuthors();
-                getGenres();
+                var getCollections = $.when(getAuthors(), getGenres());
                 if (bookId.bookId == '') {
                     $('#book-id').hide();
                     $('#remove-button').hide();
@@ -167,7 +166,9 @@
                         e.preventDefault();
                         removeBook(bookId);
                     });
-                    getBook(bookId);
+                    getCollections.then(function() {
+                        getBook(bookId);
+                    });
                 }
             });
         </script>
